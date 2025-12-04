@@ -2,7 +2,6 @@
     "m3l": {
         "input": "m3l.cif",
         "contig": "100-100,/0,B1-21",
-        "contig_atoms": "{}",
         "length": "121-121",
         "redesign_motif_sidechains": false,
         "select_fixed_atoms": false
