@@ -53,6 +53,25 @@ For an interactive Google Colab notebook walking through a basic design pipeline
 
 ---
 
+## Pixi environment (recommended)
+
+Use [pixi](https://pixi.sh/latest/) to get a fully reproducible env that matches the repo lockfile.
+
+1. Install pixi (one‑liner):
+   ```bash
+   curl -fsSL https://pixi.sh/install.sh | bash
+   # restart your shell or source the installer message so `pixi` is on PATH
+   ```
+2. Create the default environment (uses `pyproject.toml` + `pixi.lock`):
+   ```bash
+   pixi install
+   ```
+3. Run the RFD3 bond-preservation test with the pixi env (disables user site-packages to avoid conflicts):
+   ```bash
+   PYTHONNOUSERSITE=1 pixi run pytest -s -o log_cli=true -o log_cli_level=WARNING models/rfd3/tests/
+   ```
+   Replace the path with any other test module as needed.
+
 ## Development
 
 ### Code Organization

@@ -1,5 +1,5 @@
 # For docs / outputs from example notebooks;
-examples/*.cif
+# examples/*.cif
 **.ckpt
 **.pt
 
@@ -224,3 +224,6 @@ logs/
 # AI
 **/CLAUDE.md
 **/.claude
+# pixi environments
+.pixi/*
+!.pixi/config.toml

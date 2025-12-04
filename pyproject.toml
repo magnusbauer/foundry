@@ -191,3 +191,23 @@ ignore = [
 
 [tool.pyright]
 typeCheckingMode = "off"
+
+[tool.pixi.workspace]
+channels = ["conda-forge"]
+platforms = ["linux-64"]
+
+[tool.pixi.dependencies]
+python = "3.12.*"
+
+[tool.pixi.pypi-dependencies]
+rc-foundry = { path = ".", editable = true }
+# ...any other pixi pypi deps that were in the duplicate block...
+
+[tool.pixi.environments]
+default = { solve-group = "default" }
+all = { features = ["all"], solve-group = "default" }
+dev = { features = ["dev"], solve-group = "default" }
+rf3 = { features = ["rf3"], solve-group = "default" }
+rfd3 = { features = ["rfd3"], solve-group = "default" }
+
+[tool.pixi.tasks]
