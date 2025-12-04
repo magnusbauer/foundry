@@ -1,10 +1,10 @@
 {
     "m3l": {
-        "input": "/net/scratch/magnusb/git/pipelines_ptm/m3l.cif",
+        "input": "m3l.cif",
         "contig": "100-100,/0,B1-21",
         "contig_atoms": "{}",
         "length": "121-121",
         "redesign_motif_sidechains": false,
-        "unfix_all": true
+        "select_fixed_atoms": false
     }
 }
