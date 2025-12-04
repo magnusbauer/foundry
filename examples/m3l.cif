@@ -1,0 +1,326 @@
+data_m3l.cif
+#
+_entry.id       m3l.cif
+_entry.author   magnusb
+_entry.date     2025-12-04
+_entry.time     12:08:21
+#
+_entity_poly.entity_id                      0
+_entity_poly.type                           polypeptide(l)
+_entity_poly.nstd_linkage                   no
+_entity_poly.nstd_monomer                   yes
+_entity_poly.pdbx_seq_one_letter_code       INHKNNDSSVGXSSSYPMVSE
+_entity_poly.pdbx_seq_one_letter_code_can   INHKNNDSSVGKSSSYPMVSE
+_entity_poly.pdbx_strand_id                 B
+_entity_poly.pdbx_target_identifier         ?
+#
+loop_
+_struct_conn.id 
+_struct_conn.conn_type_id 
+_struct_conn.pdbx_value_order 
+_struct_conn.ptnr1_label_asym_id 
+_struct_conn.ptnr2_label_asym_id 
+_struct_conn.ptnr1_label_comp_id 
+_struct_conn.ptnr2_label_comp_id 
+_struct_conn.ptnr1_label_seq_id 
+_struct_conn.ptnr2_label_seq_id 
+_struct_conn.ptnr1_label_atom_id 
+_struct_conn.ptnr2_label_atom_id 
+_struct_conn.pdbx_ptnr1_PDB_ins_code 
+_struct_conn.pdbx_ptnr2_PDB_ins_code 
+1 covale sing B B GLY M3L 11 12 C N . .
+2 covale sing B B M3L SER 12 13 C N . .
+#
+loop_
+_chem_comp_bond.pdbx_ordinal 
+_chem_comp_bond.comp_id 
+_chem_comp_bond.atom_id_1 
+_chem_comp_bond.atom_id_2 
+_chem_comp_bond.value_order 
+_chem_comp_bond.pdbx_aromatic_flag 
+_chem_comp_bond.pdbx_stereo_config 
+1  ILE N   CA  SING N ?
+2  ILE CA  C   SING N ?
+3  ILE CA  CB  SING N ?
+4  ILE C   O   DOUB N ?
+5  ILE CB  CG1 SING N ?
+6  ILE CB  CG2 SING N ?
+7  ILE CG1 CD1 SING N ?
+8  ASN N   CA  SING N ?
+9  ASN CA  C   SING N ?
+10 ASN CA  CB  SING N ?
+11 ASN C   O   DOUB N ?
+12 ASN CB  CG  SING N ?
+13 ASN CG  OD1 DOUB N ?
+14 ASN CG  ND2 SING N ?
+15 HIS N   CA  SING N ?
+16 HIS CA  C   SING N ?
+17 HIS CA  CB  SING N ?
+18 HIS C   O   DOUB N ?
+19 HIS CB  CG  SING N ?
+20 HIS CG  ND1 SING Y ?
+21 HIS CG  CD2 DOUB Y ?
+22 HIS ND1 CE1 DOUB Y ?
+23 HIS CD2 NE2 SING Y ?
+24 HIS CE1 NE2 SING Y ?
+25 LYS N   CA  SING N ?
+26 LYS CA  C   SING N ?
+27 LYS CA  CB  SING N ?
+28 LYS C   O   DOUB N ?
+29 LYS CB  CG  SING N ?
+30 LYS CG  CD  SING N ?
+31 LYS CD  CE  SING N ?
+32 LYS CE  NZ  SING N ?
+33 ASP N   CA  SING N ?
+34 ASP CA  C   SING N ?
+35 ASP CA  CB  SING N ?
+36 ASP C   O   DOUB N ?
+37 ASP CB  CG  SING N ?
+38 ASP CG  OD1 DOUB N ?
+39 ASP CG  OD2 SING N ?
+40 SER N   CA  SING N ?
+41 SER CA  C   SING N ?
+42 SER CA  CB  SING N ?
+43 SER C   O   DOUB N ?
+44 SER CB  OG  SING N ?
+45 VAL N   CA  SING N ?
+46 VAL CA  C   SING N ?
+47 VAL CA  CB  SING N ?
+48 VAL C   O   DOUB N ?
+49 VAL CB  CG1 SING N ?
+50 VAL CB  CG2 SING N ?
+51 GLY N   CA  SING N ?
+52 GLY CA  C   SING N ?
+53 GLY C   O   DOUB N ?
+54 M3L N   CA  SING N ?
+55 M3L CA  CB  SING N ?
+56 M3L CA  C   SING N ?
+57 M3L CB  CG  SING N ?
+58 M3L CG  CD  SING N ?
+59 M3L CD  CE  SING N ?
+60 M3L CE  NZ  SING N ?
+61 M3L NZ  CM1 SING N ?
+62 M3L NZ  CM2 SING N ?
+63 M3L NZ  CM3 SING N ?
+64 M3L C   O   DOUB N ?
+65 TYR N   CA  SING N ?
+66 TYR CA  C   SING N ?
+67 TYR CA  CB  SING N ?
+68 TYR C   O   DOUB N ?
+69 TYR CB  CG  SING N ?
+70 TYR CG  CD1 DOUB Y ?
+71 TYR CG  CD2 SING Y ?
+72 TYR CD1 CE1 SING Y ?
+73 TYR CD2 CE2 DOUB Y ?
+74 TYR CE1 CZ  DOUB Y ?
+75 TYR CE2 CZ  SING Y ?
+76 TYR CZ  OH  SING N ?
+77 PRO N   CA  SING N ?
+78 PRO N   CD  SING N ?
+79 PRO CA  C   SING N ?
+80 PRO CA  CB  SING N ?
+81 PRO C   O   DOUB N ?
+82 PRO CB  CG  SING N ?
+83 PRO CG  CD  SING N ?
+84 MET N   CA  SING N ?
+85 MET CA  C   SING N ?
+86 MET CA  CB  SING N ?
+87 MET C   O   DOUB N ?
+88 MET CB  CG  SING N ?
+89 MET CG  SD  SING N ?
+90 MET SD  CE  SING N ?
+91 GLU N   CA  SING N ?
+92 GLU CA  C   SING N ?
+93 GLU CA  CB  SING N ?
+94 GLU C   O   DOUB N ?
+95 GLU C   OXT SING N ?
+96 GLU CB  CG  SING N ?
+97 GLU CG  CD  SING N ?
+98 GLU CD  OE1 DOUB N ?
+99 GLU CD  OE2 SING N ?
+#
+loop_
+_atom_site.group_PDB 
+_atom_site.type_symbol 
+_atom_site.label_atom_id 
+_atom_site.label_alt_id 
+_atom_site.label_comp_id 
+_atom_site.label_asym_id 
+_atom_site.label_entity_id 
+_atom_site.label_seq_id 
+_atom_site.pdbx_PDB_ins_code 
+_atom_site.auth_seq_id 
+_atom_site.auth_comp_id 
+_atom_site.auth_asym_id 
+_atom_site.auth_atom_id 
+_atom_site.B_iso_or_equiv 
+_atom_site.occupancy 
+_atom_site.pdbx_formal_charge 
+_atom_site.Cartn_x 
+_atom_site.Cartn_y 
+_atom_site.Cartn_z 
+_atom_site.pdbx_PDB_model_num 
+_atom_site.id 
+ATOM   N N   . ILE B 0 1  . 1  ILE B N   0 1.0 ?  0 0 0 1 1
+ATOM   C CA  . ILE B 0 1  . 1  ILE B CA  0 1.0 ?  0 0 0 1 2
+ATOM   C C   . ILE B 0 1  . 1  ILE B C   0 1.0 ?  0 0 0 1 3
+ATOM   O O   . ILE B 0 1  . 1  ILE B O   0 1.0 ?  0 0 0 1 4
+ATOM   C CB  . ILE B 0 1  . 1  ILE B CB  0 1.0 ?  0 0 0 1 5
+ATOM   C CG1 . ILE B 0 1  . 1  ILE B CG1 0 1.0 ?  0 0 0 1 6
+ATOM   C CG2 . ILE B 0 1  . 1  ILE B CG2 0 1.0 ?  0 0 0 1 7
+ATOM   C CD1 . ILE B 0 1  . 1  ILE B CD1 0 1.0 ?  0 0 0 1 8
+ATOM   N N   . ASN B 0 2  . 2  ASN B N   0 1.0 ?  0 0 0 1 9
+ATOM   C CA  . ASN B 0 2  . 2  ASN B CA  0 1.0 ?  0 0 0 1 10
+ATOM   C C   . ASN B 0 2  . 2  ASN B C   0 1.0 ?  0 0 0 1 11
+ATOM   O O   . ASN B 0 2  . 2  ASN B O   0 1.0 ?  0 0 0 1 12
+ATOM   C CB  . ASN B 0 2  . 2  ASN B CB  0 1.0 ?  0 0 0 1 13
+ATOM   C CG  . ASN B 0 2  . 2  ASN B CG  0 1.0 ?  0 0 0 1 14
+ATOM   O OD1 . ASN B 0 2  . 2  ASN B OD1 0 1.0 ?  0 0 0 1 15
+ATOM   N ND2 . ASN B 0 2  . 2  ASN B ND2 0 1.0 ?  0 0 0 1 16
+ATOM   N N   . HIS B 0 3  . 3  HIS B N   0 1.0 ?  0 0 0 1 17
+ATOM   C CA  . HIS B 0 3  . 3  HIS B CA  0 1.0 ?  0 0 0 1 18
+ATOM   C C   . HIS B 0 3  . 3  HIS B C   0 1.0 ?  0 0 0 1 19
+ATOM   O O   . HIS B 0 3  . 3  HIS B O   0 1.0 ?  0 0 0 1 20
+ATOM   C CB  . HIS B 0 3  . 3  HIS B CB  0 1.0 ?  0 0 0 1 21
+ATOM   C CG  . HIS B 0 3  . 3  HIS B CG  0 1.0 ?  0 0 0 1 22
+ATOM   N ND1 . HIS B 0 3  . 3  HIS B ND1 0 1.0 +1 0 0 0 1 23
+ATOM   C CD2 . HIS B 0 3  . 3  HIS B CD2 0 1.0 ?  0 0 0 1 24
+ATOM   C CE1 . HIS B 0 3  . 3  HIS B CE1 0 1.0 ?  0 0 0 1 25
+ATOM   N NE2 . HIS B 0 3  . 3  HIS B NE2 0 1.0 ?  0 0 0 1 26
+ATOM   N N   . LYS B 0 4  . 4  LYS B N   0 1.0 ?  0 0 0 1 27
+ATOM   C CA  . LYS B 0 4  . 4  LYS B CA  0 1.0 ?  0 0 0 1 28
+ATOM   C C   . LYS B 0 4  . 4  LYS B C   0 1.0 ?  0 0 0 1 29
+ATOM   O O   . LYS B 0 4  . 4  LYS B O   0 1.0 ?  0 0 0 1 30
+ATOM   C CB  . LYS B 0 4  . 4  LYS B CB  0 1.0 ?  0 0 0 1 31
+ATOM   C CG  . LYS B 0 4  . 4  LYS B CG  0 1.0 ?  0 0 0 1 32
+ATOM   C CD  . LYS B 0 4  . 4  LYS B CD  0 1.0 ?  0 0 0 1 33
+ATOM   C CE  . LYS B 0 4  . 4  LYS B CE  0 1.0 ?  0 0 0 1 34
+ATOM   N NZ  . LYS B 0 4  . 4  LYS B NZ  0 1.0 +1 0 0 0 1 35
+ATOM   N N   . ASN B 0 5  . 5  ASN B N   0 1.0 ?  0 0 0 1 36
+ATOM   C CA  . ASN B 0 5  . 5  ASN B CA  0 1.0 ?  0 0 0 1 37
+ATOM   C C   . ASN B 0 5  . 5  ASN B C   0 1.0 ?  0 0 0 1 38
+ATOM   O O   . ASN B 0 5  . 5  ASN B O   0 1.0 ?  0 0 0 1 39
+ATOM   C CB  . ASN B 0 5  . 5  ASN B CB  0 1.0 ?  0 0 0 1 40
+ATOM   C CG  . ASN B 0 5  . 5  ASN B CG  0 1.0 ?  0 0 0 1 41
+ATOM   O OD1 . ASN B 0 5  . 5  ASN B OD1 0 1.0 ?  0 0 0 1 42
+ATOM   N ND2 . ASN B 0 5  . 5  ASN B ND2 0 1.0 ?  0 0 0 1 43
+ATOM   N N   . ASN B 0 6  . 6  ASN B N   0 1.0 ?  0 0 0 1 44
+ATOM   C CA  . ASN B 0 6  . 6  ASN B CA  0 1.0 ?  0 0 0 1 45
+ATOM   C C   . ASN B 0 6  . 6  ASN B C   0 1.0 ?  0 0 0 1 46
+ATOM   O O   . ASN B 0 6  . 6  ASN B O   0 1.0 ?  0 0 0 1 47
+ATOM   C CB  . ASN B 0 6  . 6  ASN B CB  0 1.0 ?  0 0 0 1 48
+ATOM   C CG  . ASN B 0 6  . 6  ASN B CG  0 1.0 ?  0 0 0 1 49
+ATOM   O OD1 . ASN B 0 6  . 6  ASN B OD1 0 1.0 ?  0 0 0 1 50
+ATOM   N ND2 . ASN B 0 6  . 6  ASN B ND2 0 1.0 ?  0 0 0 1 51
+ATOM   N N   . ASP B 0 7  . 7  ASP B N   0 1.0 ?  0 0 0 1 52
+ATOM   C CA  . ASP B 0 7  . 7  ASP B CA  0 1.0 ?  0 0 0 1 53
+ATOM   C C   . ASP B 0 7  . 7  ASP B C   0 1.0 ?  0 0 0 1 54
+ATOM   O O   . ASP B 0 7  . 7  ASP B O   0 1.0 ?  0 0 0 1 55
+ATOM   C CB  . ASP B 0 7  . 7  ASP B CB  0 1.0 ?  0 0 0 1 56
+ATOM   C CG  . ASP B 0 7  . 7  ASP B CG  0 1.0 ?  0 0 0 1 57
+ATOM   O OD1 . ASP B 0 7  . 7  ASP B OD1 0 1.0 ?  0 0 0 1 58
+ATOM   O OD2 . ASP B 0 7  . 7  ASP B OD2 0 1.0 ?  0 0 0 1 59
+ATOM   N N   . SER B 0 8  . 8  SER B N   0 1.0 ?  0 0 0 1 60
+ATOM   C CA  . SER B 0 8  . 8  SER B CA  0 1.0 ?  0 0 0 1 61
+ATOM   C C   . SER B 0 8  . 8  SER B C   0 1.0 ?  0 0 0 1 62
+ATOM   O O   . SER B 0 8  . 8  SER B O   0 1.0 ?  0 0 0 1 63
+ATOM   C CB  . SER B 0 8  . 8  SER B CB  0 1.0 ?  0 0 0 1 64
+ATOM   O OG  . SER B 0 8  . 8  SER B OG  0 1.0 ?  0 0 0 1 65
+ATOM   N N   . SER B 0 9  . 9  SER B N   0 1.0 ?  0 0 0 1 66
+ATOM   C CA  . SER B 0 9  . 9  SER B CA  0 1.0 ?  0 0 0 1 67
+ATOM   C C   . SER B 0 9  . 9  SER B C   0 1.0 ?  0 0 0 1 68
+ATOM   O O   . SER B 0 9  . 9  SER B O   0 1.0 ?  0 0 0 1 69
+ATOM   C CB  . SER B 0 9  . 9  SER B CB  0 1.0 ?  0 0 0 1 70
+ATOM   O OG  . SER B 0 9  . 9  SER B OG  0 1.0 ?  0 0 0 1 71
+ATOM   N N   . VAL B 0 10 . 10 VAL B N   0 1.0 ?  0 0 0 1 72
+ATOM   C CA  . VAL B 0 10 . 10 VAL B CA  0 1.0 ?  0 0 0 1 73
+ATOM   C C   . VAL B 0 10 . 10 VAL B C   0 1.0 ?  0 0 0 1 74
+ATOM   O O   . VAL B 0 10 . 10 VAL B O   0 1.0 ?  0 0 0 1 75
+ATOM   C CB  . VAL B 0 10 . 10 VAL B CB  0 1.0 ?  0 0 0 1 76
+ATOM   C CG1 . VAL B 0 10 . 10 VAL B CG1 0 1.0 ?  0 0 0 1 77
+ATOM   C CG2 . VAL B 0 10 . 10 VAL B CG2 0 1.0 ?  0 0 0 1 78
+ATOM   N N   . GLY B 0 11 . 11 GLY B N   0 1.0 ?  0 0 0 1 79
+ATOM   C CA  . GLY B 0 11 . 11 GLY B CA  0 1.0 ?  0 0 0 1 80
+ATOM   C C   . GLY B 0 11 . 11 GLY B C   0 1.0 ?  0 0 0 1 81
+ATOM   O O   . GLY B 0 11 . 11 GLY B O   0 1.0 ?  0 0 0 1 82
+HETATM N N   . M3L B 0 12 . 12 M3L B N   0 1.0 ?  0 0 0 1 83
+HETATM C CA  . M3L B 0 12 . 12 M3L B CA  0 1.0 ?  0 0 0 1 84
+HETATM C CB  . M3L B 0 12 . 12 M3L B CB  0 1.0 ?  0 0 0 1 85
+HETATM C CG  . M3L B 0 12 . 12 M3L B CG  0 1.0 ?  0 0 0 1 86
+HETATM C CD  . M3L B 0 12 . 12 M3L B CD  0 1.0 ?  0 0 0 1 87
+HETATM C CE  . M3L B 0 12 . 12 M3L B CE  0 1.0 ?  0 0 0 1 88
+HETATM N NZ  . M3L B 0 12 . 12 M3L B NZ  0 1.0 +1 0 0 0 1 89
+HETATM C C   . M3L B 0 12 . 12 M3L B C   0 1.0 ?  0 0 0 1 90
+HETATM O O   . M3L B 0 12 . 12 M3L B O   0 1.0 ?  0 0 0 1 91
+HETATM C CM1 . M3L B 0 12 . 12 M3L B CM1 0 1.0 ?  0 0 0 1 92
+HETATM C CM2 . M3L B 0 12 . 12 M3L B CM2 0 1.0 ?  0 0 0 1 93
+HETATM C CM3 . M3L B 0 12 . 12 M3L B CM3 0 1.0 ?  0 0 0 1 94
+ATOM   N N   . SER B 0 13 . 13 SER B N   0 1.0 ?  0 0 0 1 95
+ATOM   C CA  . SER B 0 13 . 13 SER B CA  0 1.0 ?  0 0 0 1 96
+ATOM   C C   . SER B 0 13 . 13 SER B C   0 1.0 ?  0 0 0 1 97
+ATOM   O O   . SER B 0 13 . 13 SER B O   0 1.0 ?  0 0 0 1 98
+ATOM   C CB  . SER B 0 13 . 13 SER B CB  0 1.0 ?  0 0 0 1 99
+ATOM   O OG  . SER B 0 13 . 13 SER B OG  0 1.0 ?  0 0 0 1 100
+ATOM   N N   . SER B 0 14 . 14 SER B N   0 1.0 ?  0 0 0 1 101
+ATOM   C CA  . SER B 0 14 . 14 SER B CA  0 1.0 ?  0 0 0 1 102
+ATOM   C C   . SER B 0 14 . 14 SER B C   0 1.0 ?  0 0 0 1 103
+ATOM   O O   . SER B 0 14 . 14 SER B O   0 1.0 ?  0 0 0 1 104
+ATOM   C CB  . SER B 0 14 . 14 SER B CB  0 1.0 ?  0 0 0 1 105
+ATOM   O OG  . SER B 0 14 . 14 SER B OG  0 1.0 ?  0 0 0 1 106
+ATOM   N N   . SER B 0 15 . 15 SER B N   0 1.0 ?  0 0 0 1 107
+ATOM   C CA  . SER B 0 15 . 15 SER B CA  0 1.0 ?  0 0 0 1 108
+ATOM   C C   . SER B 0 15 . 15 SER B C   0 1.0 ?  0 0 0 1 109
+ATOM   O O   . SER B 0 15 . 15 SER B O   0 1.0 ?  0 0 0 1 110
+ATOM   C CB  . SER B 0 15 . 15 SER B CB  0 1.0 ?  0 0 0 1 111
+ATOM   O OG  . SER B 0 15 . 15 SER B OG  0 1.0 ?  0 0 0 1 112
+ATOM   N N   . TYR B 0 16 . 16 TYR B N   0 1.0 ?  0 0 0 1 113
+ATOM   C CA  . TYR B 0 16 . 16 TYR B CA  0 1.0 ?  0 0 0 1 114
+ATOM   C C   . TYR B 0 16 . 16 TYR B C   0 1.0 ?  0 0 0 1 115
+ATOM   O O   . TYR B 0 16 . 16 TYR B O   0 1.0 ?  0 0 0 1 116
+ATOM   C CB  . TYR B 0 16 . 16 TYR B CB  0 1.0 ?  0 0 0 1 117
+ATOM   C CG  . TYR B 0 16 . 16 TYR B CG  0 1.0 ?  0 0 0 1 118
+ATOM   C CD1 . TYR B 0 16 . 16 TYR B CD1 0 1.0 ?  0 0 0 1 119
+ATOM   C CD2 . TYR B 0 16 . 16 TYR B CD2 0 1.0 ?  0 0 0 1 120
+ATOM   C CE1 . TYR B 0 16 . 16 TYR B CE1 0 1.0 ?  0 0 0 1 121
+ATOM   C CE2 . TYR B 0 16 . 16 TYR B CE2 0 1.0 ?  0 0 0 1 122
+ATOM   C CZ  . TYR B 0 16 . 16 TYR B CZ  0 1.0 ?  0 0 0 1 123
+ATOM   O OH  . TYR B 0 16 . 16 TYR B OH  0 1.0 ?  0 0 0 1 124
+ATOM   N N   . PRO B 0 17 . 17 PRO B N   0 1.0 ?  0 0 0 1 125
+ATOM   C CA  . PRO B 0 17 . 17 PRO B CA  0 1.0 ?  0 0 0 1 126
+ATOM   C C   . PRO B 0 17 . 17 PRO B C   0 1.0 ?  0 0 0 1 127
+ATOM   O O   . PRO B 0 17 . 17 PRO B O   0 1.0 ?  0 0 0 1 128
+ATOM   C CB  . PRO B 0 17 . 17 PRO B CB  0 1.0 ?  0 0 0 1 129
+ATOM   C CG  . PRO B 0 17 . 17 PRO B CG  0 1.0 ?  0 0 0 1 130
+ATOM   C CD  . PRO B 0 17 . 17 PRO B CD  0 1.0 ?  0 0 0 1 131
+ATOM   N N   . MET B 0 18 . 18 MET B N   0 1.0 ?  0 0 0 1 132
+ATOM   C CA  . MET B 0 18 . 18 MET B CA  0 1.0 ?  0 0 0 1 133
+ATOM   C C   . MET B 0 18 . 18 MET B C   0 1.0 ?  0 0 0 1 134
+ATOM   O O   . MET B 0 18 . 18 MET B O   0 1.0 ?  0 0 0 1 135
+ATOM   C CB  . MET B 0 18 . 18 MET B CB  0 1.0 ?  0 0 0 1 136
+ATOM   C CG  . MET B 0 18 . 18 MET B CG  0 1.0 ?  0 0 0 1 137
+ATOM   S SD  . MET B 0 18 . 18 MET B SD  0 1.0 ?  0 0 0 1 138
+ATOM   C CE  . MET B 0 18 . 18 MET B CE  0 1.0 ?  0 0 0 1 139
+ATOM   N N   . VAL B 0 19 . 19 VAL B N   0 1.0 ?  0 0 0 1 140
+ATOM   C CA  . VAL B 0 19 . 19 VAL B CA  0 1.0 ?  0 0 0 1 141
+ATOM   C C   . VAL B 0 19 . 19 VAL B C   0 1.0 ?  0 0 0 1 142
+ATOM   O O   . VAL B 0 19 . 19 VAL B O   0 1.0 ?  0 0 0 1 143
+ATOM   C CB  . VAL B 0 19 . 19 VAL B CB  0 1.0 ?  0 0 0 1 144
+ATOM   C CG1 . VAL B 0 19 . 19 VAL B CG1 0 1.0 ?  0 0 0 1 145
+ATOM   C CG2 . VAL B 0 19 . 19 VAL B CG2 0 1.0 ?  0 0 0 1 146
+ATOM   N N   . SER B 0 20 . 20 SER B N   0 1.0 ?  0 0 0 1 147
+ATOM   C CA  . SER B 0 20 . 20 SER B CA  0 1.0 ?  0 0 0 1 148
+ATOM   C C   . SER B 0 20 . 20 SER B C   0 1.0 ?  0 0 0 1 149
+ATOM   O O   . SER B 0 20 . 20 SER B O   0 1.0 ?  0 0 0 1 150
+ATOM   C CB  . SER B 0 20 . 20 SER B CB  0 1.0 ?  0 0 0 1 151
+ATOM   O OG  . SER B 0 20 . 20 SER B OG  0 1.0 ?  0 0 0 1 152
+ATOM   N N   . GLU B 0 21 . 21 GLU B N   0 1.0 ?  0 0 0 1 153
+ATOM   C CA  . GLU B 0 21 . 21 GLU B CA  0 1.0 ?  0 0 0 1 154
+ATOM   C C   . GLU B 0 21 . 21 GLU B C   0 1.0 ?  0 0 0 1 155
+ATOM   O O   . GLU B 0 21 . 21 GLU B O   0 1.0 ?  0 0 0 1 156
+ATOM   C CB  . GLU B 0 21 . 21 GLU B CB  0 1.0 ?  0 0 0 1 157
+ATOM   C CG  . GLU B 0 21 . 21 GLU B CG  0 1.0 ?  0 0 0 1 158
+ATOM   C CD  . GLU B 0 21 . 21 GLU B CD  0 1.0 ?  0 0 0 1 159
+ATOM   O OE1 . GLU B 0 21 . 21 GLU B OE1 0 1.0 ?  0 0 0 1 160
+ATOM   O OE2 . GLU B 0 21 . 21 GLU B OE2 0 1.0 ?  0 0 0 1 161
+ATOM   O OXT . GLU B 0 21 . 21 GLU B OXT 0 1.0 ?  0 0 0 1 162
+#
