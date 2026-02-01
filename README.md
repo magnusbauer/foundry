@@ -66,11 +66,18 @@ Use [pixi](https://pixi.sh/latest/) to get a fully reproducible env that matches
    ```bash
    pixi install
    ```
-3. Run the RFD3 bond-preservation test with the pixi env (disables user site-packages to avoid conflicts):
+3. Run the bond-preservation regression tests (no external fixtures required):
    ```bash
-   PYTHONNOUSERSITE=1 pixi run pytest -s -o log_cli=true -o log_cli_level=WARNING models/rfd3/tests/
+   # PTM backbone bonds in legacy and new pipelines
+   PYTHONNOUSERSITE=1 PYTHONPATH= pixi run -e dev -- pytest \
+     models/rfd3/tests/test_legacy_ptm_bonds.py \
+     models/rfd3/tests/test_bond_preservation_cases.py
    ```
-   Replace the path with any other test module as needed.
+   If you only want the legacy test:
+   ```bash
+   PYTHONNOUSERSITE=1 PYTHONPATH= pixi run -e dev -- pytest models/rfd3/tests/test_legacy_ptm_bonds.py -q
+   ```
+   The broader rfd3 test suite still depends on benchmark JSON/PDB fixtures that are **not** shipped in this repo; those tests will skip or fail without that data.
 
 ## Development
 
@@ -100,7 +107,21 @@ This approach allows you to:
 - Add new models as independent packages in `models/`
 
 > [!NOTE]
-> Running tests is not currently supported, test files may be missing.
+> Full rfd3 test coverage needs external benchmark JSON/PDB files (not included here); only the bond-preservation tests above are supported out of the box.
+
+## Bond Handling (Quick Reference)
+
+- **Legacy pipeline (dialect 1 / `legacy_input_parsing.py`):**
+  - Preserves existing inter-residue bonds involving non‑standard residues (PTMs, modified AAs) from the input.
+  - Adds backbone C–N bonds between consecutive residues when at least one residue is non‑standard (covers PTM↔diffused, PTM↔PTM, ligand-like nonstandard↔protein).
+  - Does not synthesize other crosslinks; relies on the input for disulfides/covalent/glycan links.
+
+- **Current pipeline (dialect 2 / `input_parsing.py`):**
+  - Restores source bonds for non‑standard residues and infers polymer backbone bonds for non‑standard pairs using CCD metadata.
+  - Assumes standard AA/DNA/RNA backbone bonds are present; non‑standard backbone-like linkages are added when consecutive in the same chain.
+  - Non‑backbone crosslinks (disulfides, covalent ligands, glycans) are kept if both atoms remain; otherwise skipped with a warning.
+
+Bond regression tests (`models/rfd3/tests/test_bond_preservation_cases.py`, `models/rfd3/tests/test_legacy_ptm_bonds.py`) cover disulfides, covalent ligands, glycans, PTMs, and mixed backbone cases.
 
 ### Adding New Models
 
