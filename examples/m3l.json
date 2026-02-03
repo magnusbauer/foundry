@@ -1,9 +1,14 @@
 {
     "m3l": {
         "input": "m3l.cif",
-        "contig": "10-10,/0,B1-21",
-        "length": "31-31",
+        "contig": "120-120,/0,B1-21",
         "redesign_motif_sidechains": false,
-        "select_fixed_atoms": false
+        "select_fixed_atoms": false,
+        "select_hotspots": {
+            "B12": "NZ"
+        },
+        "select_buried": {
+            "B12": "NZ"
+        }
     }
 }
