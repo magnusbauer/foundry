@@ -1,7 +1,7 @@
 {
     "cd3e": {
         "input": "CD3e.cif",
-        "contig": "10-10,/0,A1-13",
+        "contig": "120-120,/0,A1-13",
         "length": "23-23",
         "redesign_motif_sidechains": false,
         "select_fixed_atoms": false
