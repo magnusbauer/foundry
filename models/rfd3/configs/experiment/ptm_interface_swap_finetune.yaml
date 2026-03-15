@@ -1,0 +1,64 @@
+# @package _global_
+
+# Fine-tune from the current public checkpoint while swapping interface examples for the PTM parquet.
+
+defaults:
+  - override /datasets: ptm_interface_swap
+  - _self_
+
+name: ptm-interface-swap-finetune
+tags: [ptm, interface-swap, finetune]
+ckpt_path: ./ckpts/rfd3_latest.ckpt
+
+datasets:
+  diffusion_batch_size_train: 16
+  crop_size: 256
+  max_atoms_in_crop: 2560
+  global_transform_args:
+    train_conditions:
+      unconditional:
+        frequency: 2.0
+      island:
+        frequency: 2.0
+      sequence_design:
+        frequency: 0.5
+      tipatom:
+        frequency: 5.0
+      ppi:
+        frequency: 0.0
+  train:
+    pdb:
+      probability: 1.0
+
+trainer:
+  prevalidate: True
+  validate_every_n_epochs: 1
+  checkpoint_every_n_epochs: 1
+  max_epochs: 10
+  n_examples_per_epoch: 16000
+  precision: bf16-mixed
+  cleanup_guideposts: True
+  cleanup_virtual_atoms: True
+
+paths:
+  data:
+    cif_cache_dir: /net/scratch/${oc.env:USER}/training/cif_cache
+
+callbacks:
+  store_validation_metrics_in_df_callback:
+    _target_: foundry.callbacks.metrics_logging.StoreValidationMetricsInDFCallback
+    save_dir: ${paths.output_dir}/val_metrics
+    metrics_to_save: all
+  dump_validation_structures_callback:
+    _target_: rfd3.trainer.dump_validation_structures.DumpValidationStructuresCallback
+    save_dir: ${paths.output_dir}/val_structures
+    dump_predictions: True
+    dump_prediction_metadata_json: True
+    dump_trajectories: False
+    dump_denoised_trajectories_only: False
+    one_model_per_file: True
+    dump_every_n: 1
+    align_trajectories: False
+    verbose: False
+  log_design_validation_metrics_callback:
+    _target_: rfd3.callbacks.LogDesignValidationMetricsCallback

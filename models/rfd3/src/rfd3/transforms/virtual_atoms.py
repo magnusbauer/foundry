@@ -2,6 +2,8 @@
 Virtual-atom transforms for Atom14
 """
 
+import logging
+
 import biotite.structure as struc
 import numpy as np
 from atomworks.io.utils.atom_array_plus import insert_atoms
@@ -27,6 +29,37 @@ from rfd3.transforms.util_transforms import (
 
 from foundry.common import exists
 
+logger = logging.getLogger(__name__)
+
+
+def _remove_terminal_oxygen_from_protein_tokens(atom_array: struc.AtomArray) -> tuple[struc.AtomArray, int]:
+    """Drop residual protein OXT atoms before Atom14 mapping.
+
+    The main training pipeline already applies ``RemoveTerminalOxygen()``, but some
+    examples still reach the Atom14 padding stage with ``OXT`` present. Atom14 does
+    not encode terminal oxygen, so we defensively strip it here as well rather than
+    crashing a dataloader worker and desynchronizing DDP.
+    """
+
+    annotation_categories = set(atom_array.get_annotation_categories())
+    if "is_protein" not in annotation_categories:
+        return atom_array, 0
+
+    is_atomized = (
+        np.asarray(atom_array.atomize, dtype=bool)
+        if "atomize" in annotation_categories
+        else np.zeros(atom_array.array_length(), dtype=bool)
+    )
+    remove_mask = (
+        np.asarray(atom_array.atom_name == "OXT", dtype=bool)
+        & np.asarray(atom_array.is_protein, dtype=bool)
+        & ~is_atomized
+    )
+    n_removed = int(remove_mask.sum())
+    if n_removed == 0:
+        return atom_array, 0
+    return atom_array[~remove_mask], n_removed
+
 
 def map_to_association_scheme(atom_names: list | str, res_name: str, scheme="atom14"):
     """
@@ -40,12 +73,18 @@ def map_to_association_scheme(atom_names: list | str, res_name: str, scheme="ato
     atom_names = (
         [str(atom_names)] if isinstance(atom_names, (str, np.str_)) else atom_names
     )
-    idxs = np.array(
-        [
-            association_schemes_stripped[scheme][res_name].index(name)
-            for name in atom_names
-        ]
-    )
+    try:
+        idxs = np.array(
+            [
+                association_schemes_stripped[scheme][res_name].index(name)
+                for name in atom_names
+            ]
+        )
+    except ValueError as exc:
+        raise ValueError(
+            f"Atom names {list(atom_names)!r} could not be mapped to association scheme "
+            f"{scheme!r} for residue {res_name!r}"
+        ) from exc
     return ATOM14_ATOM_NAMES[idxs]
 
 
@@ -161,7 +200,15 @@ class PadTokensWithVirtualAtoms(Transform):
             )
 
     def forward(self, data: dict) -> dict:
-        atom_array = data["atom_array"]
+        atom_array, n_removed_terminal_oxygen = _remove_terminal_oxygen_from_protein_tokens(
+            data["atom_array"]
+        )
+        if n_removed_terminal_oxygen:
+            logger.warning(
+                "Removed %d residual protein terminal oxygen atom(s) before Atom14 padding%s",
+                n_removed_terminal_oxygen,
+                f" for {data['example_id']}" if "example_id" in data else "",
+            )
         starts = get_token_starts(atom_array, add_exclusive_stop=True)
         token_starts = starts[:-1]
         token_level_array = atom_array[token_starts]

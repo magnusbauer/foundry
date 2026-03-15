@@ -1,0 +1,7 @@
+# Keep the public pretrain baseline structure, but swap the interface examples for the PTM parquet.
+
+defaults:
+  - design_base
+  - train/ptm_custom_interface_swap@train.pdb.sub_datasets.interface
+  - val/ptm_holdout@val.ptm_holdout
+  - _self_

@@ -364,16 +364,20 @@ class AADesignTrainer(FabricTrainer):
             for i in range(len(arrays)):
                 metadata_dict[i]["seed"] = self.seed
 
+        specification = example.get("specification")
+
         atom_array_stack = []
         for i, atom_array in enumerate(arrays):
+            annotation_categories = set(atom_array.get_annotation_categories())
+
             # ... Create essential outputs for metadata dictionary
-            if "example" in example["specification"]:
-                metadata_dict[i] |= {"task": example["specification"]["example"]}
+            if specification is not None and "example" in specification:
+                metadata_dict[i] |= {"task": specification["example"]}
 
             # ... Add original specification to metadata
-            if self.output_full_json:
+            if self.output_full_json and specification is not None:
                 metadata_dict[i] |= {
-                    "specification": example["specification"],
+                    "specification": specification,
                 }
                 if (
                     hasattr(self, "inference_sampler_overrides")
@@ -383,7 +387,11 @@ class AADesignTrainer(FabricTrainer):
                         "inference_sampler": self.inference_sampler_overrides
                     }
 
-            if np.any(atom_array.is_motif_atom_unindexed):
+            can_process_unindexed_outputs = (
+                "src_component" in annotation_categories
+                and np.any(atom_array.is_motif_atom_unindexed)
+            )
+            if can_process_unindexed_outputs:
                 # ... insert unindexed motif to output
                 atom_array_processed, metadata = process_unindexed_outputs(
                     atom_array,
@@ -400,6 +408,11 @@ class AADesignTrainer(FabricTrainer):
                 if diffused_index_map is not None:
                     metadata_dict[i]["diffused_index_map"] = diffused_index_map
             else:
+                if np.any(atom_array.is_motif_atom_unindexed):
+                    global_logger.warning(
+                        "Skipping unindexed output processing because "
+                        "'src_component' annotations are missing."
+                    )
                 metadata_dict[i]["diffused_index_map"] = {}
 
             # Also record where indexed motifs ended up
@@ -410,32 +423,40 @@ class AADesignTrainer(FabricTrainer):
             ]
 
             # If the src_component starts with an alphabetic character, it's from an external source
-            external_src_mask = np.array(
-                [
-                    (s[0].isalpha() if len(s) > 0 else False)
-                    for s in indexed_residue_starts_non_ligand.src_component
-                ]
-            )
-            indexed_residue_starts_from_external_src = (
-                indexed_residue_starts_non_ligand[external_src_mask]
-            )
-
-            for token in indexed_residue_starts_from_external_src:
-                metadata_dict[i]["diffused_index_map"][token.src_component] = (
-                    f"{token.chain_id}{token.res_id}"
+            if "src_component" in indexed_residue_starts_non_ligand.get_annotation_categories():
+                external_src_mask = np.array(
+                    [
+                        (s[0].isalpha() if len(s) > 0 else False)
+                        for s in indexed_residue_starts_non_ligand.src_component
+                    ]
                 )
+                indexed_residue_starts_from_external_src = (
+                    indexed_residue_starts_non_ligand[external_src_mask]
+                )
+
+                for token in indexed_residue_starts_from_external_src:
+                    metadata_dict[i]["diffused_index_map"][token.src_component] = (
+                        f"{token.chain_id}{token.res_id}"
+                    )
 
             # ... Delete virtual atoms and assign atom names and elements
             if self.cleanup_virtual_atoms:
-                atom_array = _cleanup_virtual_atoms_and_assign_atom_name_elements(
-                    atom_array, association_scheme=self.association_scheme
-                )
+                try:
+                    atom_array = _cleanup_virtual_atoms_and_assign_atom_name_elements(
+                        atom_array, association_scheme=self.association_scheme
+                    )
 
-                # ... When cleaning up virtual atoms, we can also calculate native_array_metricsl
-                metadata_dict[i]["metrics"] |= get_all_backbone_metrics(
-                    atom_array,
-                    compute_non_clash_metrics_for_diffused_region_only=self.compute_non_clash_metrics_for_diffused_region_only,
-                )
+                    # ... When cleaning up virtual atoms, we can also calculate native_array_metrics
+                    metadata_dict[i]["metrics"] |= get_all_backbone_metrics(
+                        atom_array,
+                        compute_non_clash_metrics_for_diffused_region_only=self.compute_non_clash_metrics_for_diffused_region_only,
+                    )
+                except ValueError as e:
+                    metadata_dict[i]["metrics"]["cleanup_virtual_atoms_failed"] = 1.0
+                    global_logger.warning(
+                        "Failed to cleanup validation atom array for example "
+                        f"{example.get('example_id', i)}: {e}"
+                    )
 
             if (
                 "active_donor" in atom_array.get_annotation_categories()

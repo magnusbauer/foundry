@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pandas as pd
 from beartype.typing import Any
 
@@ -14,13 +16,41 @@ class LogDesignValidationMetricsCallback(BaseCallback):
         if not trainer.fabric.is_global_zero:
             return
 
-        assert hasattr(
-            trainer, "validation_results_path"
-        ), "Results path not found! Ensure that StoreValidationMetricsInDFCallback is called first."
-        df = pd.read_csv(trainer.validation_results_path)
+        results_path = getattr(trainer, "validation_results_path", None)
+        if not results_path:
+            ranked_logger.warning(
+                "Validation results path not found for this epoch; skipping validation metric logging."
+            )
+            return
+
+        results_path = Path(results_path)
+        if not results_path.exists():
+            ranked_logger.warning(
+                f"Validation results file does not exist at {results_path}; skipping validation metric logging."
+            )
+            return
+
+        try:
+            df = pd.read_csv(results_path)
+        except pd.errors.EmptyDataError:
+            ranked_logger.warning(
+                f"Validation results file {results_path} is empty; skipping validation metric logging."
+            )
+            return
+
+        if df.empty:
+            ranked_logger.warning(
+                f"Validation results file {results_path} has no rows; skipping validation metric logging."
+            )
+            return
 
         # ... filter to most recent epoch, drop epoch column
         df = df[df["epoch"] == df["epoch"].max()]
+        if df.empty:
+            ranked_logger.warning(
+                f"Validation results file {results_path} has no rows for the latest epoch; skipping validation metric logging."
+            )
+            return
         df.drop(columns=["epoch"], inplace=True)
 
         for dataset in df["dataset"].unique():

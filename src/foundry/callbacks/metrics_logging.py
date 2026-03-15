@@ -144,6 +144,13 @@ class StoreValidationMetricsInDFCallback(BaseCallback):
         if trainer.fabric.is_global_zero:
             # ... load all partial CSVs
             merged_df = self._load_and_concatenate_csvs(epoch)
+            if merged_df.empty:
+                ranked_logger.warning(
+                    f"No validation metrics rows were collected for epoch {epoch}; skipping validation metrics aggregation."
+                )
+                trainer.validation_results_path = None
+                self._cleanup_temp_files()
+                return
 
             # ... append to master CSV for all epochs
             master_path = self.save_dir / "validation_output_all_epochs.csv"
@@ -199,6 +206,8 @@ class StoreValidationMetricsInDFCallback(BaseCallback):
                 ranked_logger.warning(f"Skipping empty CSV: {f}")
 
         # Concatenate dataframes, filling missing columns with NaN
+        if not final_dataframes:
+            return pd.DataFrame()
         return pd.concat(final_dataframes, axis=0, ignore_index=True, sort=False)
 
     def _cleanup_temp_files(self):

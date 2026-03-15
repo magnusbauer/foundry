@@ -1,0 +1,28 @@
+# PTM dataset used to replace the interface/PPI sub-dataset in the public pretrain baseline.
+
+defaults:
+  - pdb/base_no_weights
+  - pdb/base_transform_args
+  - _self_
+
+dataset:
+  dataset_parser:
+    _target_: foundry.utils.dataset_parsers.GenericDFParserCompat
+    pn_unit_iid_colnames:
+      - pn_unit_1_iid
+      - pn_unit_2_iid
+    assembly_id_colname: assembly_id
+  cif_parser_args:
+    cache_dir: null
+    load_from_cache: false
+    save_to_cache: false
+  dataset:
+    name: ptm_interface_swap
+    data: /net/scratch/${oc.env:USER}/training/ptm_interface_swap_splits/ptm_train.parquet
+    filters: []
+    columns_to_load: null
+  transform:
+    filters: []
+    crop_contiguous_probability: 0.0
+    crop_spatial_probability: 1.0
+    dna_contact_crop_probability: 0.0

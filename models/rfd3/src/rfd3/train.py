@@ -15,7 +15,8 @@ from foundry.utils.weights import CheckpointConfig
 # NOTE: Sets the `PROJECT_ROOT` environment variable to the root directory of the project (where `.project-root` is located)
 rootutils.setup_root(__file__, indicator=".project-root", pythonpath=True)
 
-load_dotenv(override=True)
+# Preserve explicitly exported runtime environment variables from the launcher.
+load_dotenv(override=False)
 
 _config_path = os.path.join(os.environ["PROJECT_ROOT"], "models/rfd3/configs")
 

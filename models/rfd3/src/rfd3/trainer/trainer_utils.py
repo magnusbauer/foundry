@@ -8,6 +8,7 @@ from atomworks.ml.utils.token import (
     spread_token_wise,
 )
 from biotite.structure import concatenate, infer_elements
+from biotite.structure.residues import get_residue_starts
 from jaxtyping import Float, Int
 from rfd3.constants import (
     ATOM14_ATOM_NAMES,
@@ -134,15 +135,16 @@ def _cleanup_virtual_atoms_and_assign_atom_name_elements(
     # This is different from the ref_mask, which is used to delete virtual atoms, but this one is used to assign UNK resname for invalid residues.
     invalid_mask = []
 
-    # ... Iterate through each residue.
-    # Here we iterate through res_id instead of token_id to avoid some atomization cases or something else.
-    res_ids = atom_array.res_id
-    res_start_indices = np.concatenate(
-        [[0], np.where(res_ids[1:] != res_ids[:-1])[0] + 1]
+    # ... Iterate through each residue using explicit residue boundaries.
+    # Relying on raw res_id changes is not safe for multichain complexes,
+    # because different chains frequently reuse the same residue numbering.
+    residue_start_stop_indices = get_residue_starts(
+        atom_array, add_exclusive_stop=True
     )
-    res_end_indices = np.concatenate([res_start_indices[1:], [len(res_ids)]])
     warning_issued = False
-    for start, end in zip(res_start_indices, res_end_indices):
+    for start, end in zip(
+        residue_start_stop_indices[:-1], residue_start_stop_indices[1:]
+    ):
         res_array = atom_array[start:end]
 
         is_seq_known = all(
@@ -198,13 +200,13 @@ def _readout_seq_from_struc(
     cur_atom_array_list = []
 
     # Iterate through each residue
-    res_ids = atom_array.res_id
-    res_start_indices = np.concatenate(
-        [[0], np.where(res_ids[1:] != res_ids[:-1])[0] + 1]
+    residue_start_stop_indices = get_residue_starts(
+        atom_array, add_exclusive_stop=True
     )
-    res_end_indices = np.concatenate([res_start_indices[1:], [len(res_ids)]])
 
-    for start, end in zip(res_start_indices, res_end_indices):
+    for start, end in zip(
+        residue_start_stop_indices[:-1], residue_start_stop_indices[1:]
+    ):
         # ... Check if the current residue is after padding (seq unknown):
         cur_res_atom_array = atom_array[start:end]
         is_seq_known = all(

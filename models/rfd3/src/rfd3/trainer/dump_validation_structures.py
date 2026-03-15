@@ -1,4 +1,5 @@
 import functools
+import hashlib
 from os import PathLike
 from pathlib import Path
 
@@ -62,13 +63,14 @@ class DumpValidationStructuresCallback(BaseCallback):
         dataset_name: str = "",
     ) -> Path:
         """Helper function to build a path from a training or validation example_id."""
+        digest = hashlib.sha1(example_id.encode("utf-8")).hexdigest()[:10]
         try:
             # ... try to extract the PDB ID and assembly ID from the example ID
             parsed_id = parse_example_id(example_id)
-            identifier = f"{parsed_id['pdb_id']}_{parsed_id['assembly_id']}"
+            identifier = f"{parsed_id['pdb_id']}_{parsed_id['assembly_id']}_{digest}"
         except (KeyError, ValueError):
-            # ... if parsing fails, fall back to the original example ID
-            identifier = example_id
+            # ... if parsing fails, still use a stable short identifier so repeated validation dumps do not collide.
+            identifier = f"example_{digest}"
 
         # ... parse the example_id into a dictionary of components
         epoch_str = "epoch_{}".format(epoch) if epoch else ""
