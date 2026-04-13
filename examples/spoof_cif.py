@@ -25,6 +25,18 @@ DEFAULT_DISPLAY_MAP = {
     "M3L": "K(me3)",
 }
 DEFAULT_UNKNOWN = DICT_THREE_TO_ONE[UNKNOWN_AA]
+BOND_TYPE_LABELS = {
+    int(struc.BondType.ANY): "any",
+    int(struc.BondType.SINGLE): "single",
+    int(struc.BondType.DOUBLE): "double",
+    int(struc.BondType.TRIPLE): "triple",
+    int(struc.BondType.QUADRUPLE): "quad",
+    int(struc.BondType.AROMATIC_SINGLE): "aromatic single",
+    int(struc.BondType.AROMATIC_DOUBLE): "aromatic double",
+    int(struc.BondType.AROMATIC_TRIPLE): "aromatic triple",
+    int(struc.BondType.AROMATIC): "aromatic",
+    int(struc.BondType.COORDINATION): "coordination",
+}
 
 
 def tokenize_polymer_sequence(sequence: str) -> list[str]:
@@ -238,6 +250,14 @@ def atom_label(atom_array, atom_index: int) -> str:
     return f"{residue_label(atom_array, atom_index)}:{atom_array.atom_name[atom_index]}"
 
 
+def bond_type_label(bond_type: int) -> str:
+    """Format a human-readable bond type label."""
+    try:
+        return struc.BondType(int(bond_type)).name.replace("_", " ").lower()
+    except ValueError:
+        return str(bond_type)
+
+
 def bond_table_for_residue(
     atom_array,
     *,
@@ -382,23 +402,130 @@ def plot_local_atom_bond_graph(
             return "#93c5fd"
         return "#cbd5e1"
 
+    def node_label(node_name: str) -> str:
+        residue, resname, atom_name = node_name.split(":")
+        return f"{resname}:{atom_name}"
+
+    edge_labels: dict[tuple[str, str], str] = {}
     for row in local_table.itertuples(index=False):
-        graph.add_edge(row.atom_1, row.atom_2, bond_type=row.bond_type)
+        label = bond_type_label(row.bond_type)
+        graph.add_edge(row.atom_1, row.atom_2, bond_type=row.bond_type, bond_label=label)
+        edge_labels[(row.atom_1, row.atom_2)] = label
 
     if ax is None:
-        _, ax = plt.subplots(figsize=(10, 7))
+        _, ax = plt.subplots(figsize=(12, 9))
 
-    pos = nx.spring_layout(graph, seed=7, k=0.9)
+    pos = nx.spring_layout(graph, seed=7, k=1.05)
     colors = [node_color(node) for node in graph.nodes]
     nx.draw_networkx(
         graph,
         pos=pos,
+        labels={node: node_label(node) for node in graph.nodes},
         node_color=colors,
-        node_size=1400,
+        node_size=1800,
+        font_size=8,
+        width=1.8,
+        ax=ax,
+    )
+    nx.draw_networkx_edge_labels(
+        graph,
+        pos=pos,
+        edge_labels=edge_labels,
+        font_size=7,
+        rotate=False,
+        label_pos=0.55,
+        bbox={"fc": "white", "ec": "none", "alpha": 0.8},
+        ax=ax,
+    )
+    ax.set_title(f"Local atom bond graph around {chain_id}{residue_id} (bond types labeled)")
+    ax.set_axis_off()
+    return ax
+
+
+def plot_atom_bond_graph_with_types(
+    atom_array,
+    *,
+    chain_id: str,
+    residue_id: int,
+    ax=None,
+):
+    """Plot an atom-level graph with bond types labeled for the PTM neighborhood."""
+    local_table = bond_table_for_residue(
+        atom_array,
+        chain_id=chain_id,
+        residue_id=residue_id,
+        include_neighbors=True,
+    )
+    if local_table.empty:
+        raise ValueError(f"No bonds found for {chain_id}{residue_id}.")
+
+    graph = nx.Graph()
+    focus_key = f"{chain_id}{residue_id}:"
+
+    def node_color(node_name: str) -> str:
+        if node_name.startswith(focus_key):
+            return "#f59e0b"
+        if node_name.startswith(f"{chain_id}{residue_id - 1}:") or node_name.startswith(
+            f"{chain_id}{residue_id + 1}:"
+        ):
+            return "#93c5fd"
+        return "#cbd5e1"
+
+    def node_label(node_name: str) -> str:
+        residue_name = node_name.split(":", 1)[1]
+        return residue_name
+
+    def edge_color(bond_type: int) -> str:
+        if bond_type in (int(struc.BondType.SINGLE), int(struc.BondType.AROMATIC_SINGLE)):
+            return "#64748b"
+        if bond_type in (int(struc.BondType.DOUBLE), int(struc.BondType.AROMATIC_DOUBLE)):
+            return "#0ea5e9"
+        if bond_type in (int(struc.BondType.TRIPLE), int(struc.BondType.AROMATIC_TRIPLE)):
+            return "#7c3aed"
+        if bond_type == int(struc.BondType.AROMATIC):
+            return "#10b981"
+        return "#f97316"
+
+    for row in local_table.itertuples(index=False):
+        bond_type = int(row.bond_type)
+        graph.add_edge(
+            row.atom_1,
+            row.atom_2,
+            bond_type=bond_type,
+            bond_label=BOND_TYPE_LABELS.get(bond_type, str(bond_type)),
+        )
+
+    if ax is None:
+        _, ax = plt.subplots(figsize=(13, 8))
+
+    pos = nx.spring_layout(graph, seed=7, k=1.1)
+    node_colors = [node_color(node) for node in graph.nodes]
+    edge_colors = [edge_color(data["bond_type"]) for _, _, data in graph.edges(data=True)]
+
+    nx.draw_networkx(
+        graph,
+        pos=pos,
+        labels={node: node_label(node) for node in graph.nodes},
+        node_color=node_colors,
+        edge_color=edge_colors,
+        node_size=1800,
+        width=2.8,
         font_size=8,
         ax=ax,
     )
-    ax.set_title(f"Local atom bond graph around {chain_id}{residue_id}")
+    nx.draw_networkx_edge_labels(
+        graph,
+        pos=pos,
+        edge_labels={
+            (node_u, node_v): data["bond_label"]
+            for node_u, node_v, data in graph.edges(data=True)
+        },
+        font_size=7,
+        rotate=False,
+        bbox={"alpha": 0.75, "facecolor": "white", "edgecolor": "none", "pad": 0.2},
+        ax=ax,
+    )
+    ax.set_title(f"Typed atom bond graph around {chain_id}{residue_id}")
     ax.set_axis_off()
     return ax
 
