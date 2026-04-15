@@ -118,12 +118,38 @@ def clean_cif_file(cif_path: str | Path) -> Path:
     return cif_path
 
 
+def ptm_residue_key(chain_id: str, residue_id: int) -> str:
+    """Format the chain/residue key used in RFD3 selector maps."""
+    return f"{chain_id}{residue_id}"
+
+
+def ptr_selector_guidance(chain_id: str, residue_id: int) -> dict[str, str]:
+    """Return short workshop hints for filling PTR-centered selector fields."""
+    residue_key = ptm_residue_key(chain_id, residue_id)
+    return {
+        "residue_key": residue_key,
+        "select_hotspots": (
+            "Start from the phosphate-centered atoms. A common first pass is "
+            f'{residue_key}: "P,O1P,O2P,O3P,OH". '
+            "`OH` here is the tyrosine oxygen that bridges the aromatic ring to the phosphate."
+        ),
+        "select_buried": (
+            "Use the phosphate atoms you want packed by the binder. "
+            f'A common first pass is {residue_key}: "P,O1P,O2P,O3P".'
+        ),
+        "select_hbond_acceptor": (
+            "Use the non-bridging phosphate oxygens as acceptors. "
+            f'A common first pass is {residue_key}: "O1P,O2P,O3P".'
+        ),
+    }
+
+
 def default_ptr_binder_conditioning(
     chain_id: str,
     residue_id: int,
 ) -> dict[str, dict[str, str] | str | bool]:
     """Return a workshop-friendly RFD3 conditioning block for phosphotyrosine."""
-    residue_key = f"{chain_id}{residue_id}"
+    residue_key = ptm_residue_key(chain_id, residue_id)
     return {
         "dialect": 2,
         "infer_ori_strategy": "hotspots",
@@ -141,6 +167,32 @@ def default_ptr_binder_conditioning(
     }
 
 
+def build_rfd3_input_template(
+    *,
+    name: str,
+    cif_path: str | Path,
+    binder_length: int,
+    target_length: int,
+    target_chain_id: str,
+) -> dict[str, dict[str, Any]]:
+    """Create an RFD3 JSON scaffold with empty selector blocks for workshop exercises."""
+    cif_path = Path(cif_path).resolve()
+    return {
+        name: {
+            "input": str(cif_path),
+            "contig": f"{binder_length}-{binder_length},/0,{target_chain_id}1-{target_length}",
+            "length": f"{binder_length + target_length}-{binder_length + target_length}",
+            "dialect": 2,
+            "infer_ori_strategy": "hotspots",
+            "redesign_motif_sidechains": False,
+            "select_fixed_atoms": False,
+            "select_hotspots": {},
+            "select_buried": {},
+            "select_hbond_acceptor": {},
+        }
+    }
+
+
 def build_rfd3_input(
     *,
     name: str,
@@ -151,12 +203,13 @@ def build_rfd3_input(
     ptm_residue_id: int,
 ) -> dict[str, dict[str, Any]]:
     """Create a single-example RFD3 JSON payload for peptide binder design."""
-    cif_path = Path(cif_path).resolve()
-    spec: dict[str, Any] = {
-        "input": str(cif_path),
-        "contig": f"{binder_length}-{binder_length},/0,{target_chain_id}1-{target_length}",
-        "length": f"{binder_length + target_length}-{binder_length + target_length}",
-    }
+    spec: dict[str, Any] = build_rfd3_input_template(
+        name=name,
+        cif_path=cif_path,
+        binder_length=binder_length,
+        target_length=target_length,
+        target_chain_id=target_chain_id,
+    )[name]
     spec.update(
         default_ptr_binder_conditioning(
             chain_id=target_chain_id,
@@ -568,31 +621,57 @@ def chain_summary(atom_array) -> pd.DataFrame:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Spoof a CIF and matching RFD3 JSON input for a PTM peptide target."
+        description=(
+            "Spoof a CIF for a PTM peptide target and optionally write an RFD3 JSON scaffold."
+        )
     )
     parser.add_argument("--name", default="ptm_target")
     parser.add_argument("--sequence", required=True)
     parser.add_argument("--binder-length", type=int, default=100)
     parser.add_argument("--out-dir", default=".")
     parser.add_argument("--target-chain-id", default="B")
+    parser.add_argument("--ptm-resname", default="PTR")
+    parser.add_argument(
+        "--write-json-scaffold",
+        action="store_true",
+        help="Also write a JSON scaffold with empty selector fields for the workshop exercise.",
+    )
     args = parser.parse_args()
 
-    result = build_ptm_binder_workshop_inputs(
+    tokens = tokenize_polymer_sequence(args.sequence)
+    ptm_positions = find_ptm_positions(tokens, {args.ptm_resname})
+    if not ptm_positions:
+        raise ValueError(f"Sequence {args.sequence!r} does not contain {args.ptm_resname}.")
+    ptm_residue_id = next(iter(ptm_positions))
+
+    cif_path, _ = spoof_cif_from_sequence(
         name=args.name,
         sequence=args.sequence,
-        binder_length=args.binder_length,
         out_dir=args.out_dir,
+        chain_id=args.target_chain_id,
+    )
+    rfd3_template = build_rfd3_input_template(
+        name=args.name,
+        cif_path=cif_path,
+        binder_length=args.binder_length,
+        target_length=len(tokens),
         target_chain_id=args.target_chain_id,
     )
+    json_path = None
+    if args.write_json_scaffold:
+        json_path = Path(args.out_dir).expanduser().resolve() / f"{args.name}.json"
+        json_path.write_text(json.dumps(rfd3_template, indent=2))
 
     summary = {
-        "name": result["name"],
-        "sequence": result["sequence"],
-        "tokens": result["tokens"],
-        "ptm_positions": result["ptm_positions"],
-        "sequence_length": result["sequence_length"],
-        "cif_path": str(result["cif_path"]),
-        "json_path": str(result["json_path"]),
+        "name": args.name,
+        "sequence": args.sequence,
+        "tokens": tokens,
+        "ptm_positions": ptm_positions,
+        "sequence_length": len(tokens),
+        "cif_path": str(cif_path),
+        "json_path": str(json_path) if json_path is not None else None,
+        "rfd3_template": rfd3_template,
+        "selector_guidance": ptr_selector_guidance(args.target_chain_id, ptm_residue_id),
     }
     print(json.dumps(summary, indent=2))
 

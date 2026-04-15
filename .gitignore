@@ -220,6 +220,7 @@ logs/
 *.ckpt
 **/distillation/
 **/benchmarks/
+examples/workshop_outputs/
 
 # AI
 **/CLAUDE.md
