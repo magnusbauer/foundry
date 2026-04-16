@@ -83,10 +83,14 @@ def sequence_length(sequence: str) -> int:
     return len(tokenize_polymer_sequence(sequence))
 
 
-def _spoof_cif_from_dictionary(item: dict[str, Any], out_dir: Path) -> tuple[Path, Any]:
+def spoof_cif_from_dictionary(
+    item: dict[str, Any], out_dir: str | Path
+) -> tuple[Path, Any]:
     """Build a CIF file from a cifutils component dictionary."""
     if "name" not in item or "components" not in item:
         raise ValueError("Input dictionary must contain 'name' and 'components'.")
+    out_dir = Path(out_dir).expanduser().resolve()
+    out_dir.mkdir(parents=True, exist_ok=True)
 
     atom_array, component_list = components_to_atom_array(
         item["components"],
@@ -109,6 +113,19 @@ def _spoof_cif_from_dictionary(item: dict[str, Any], out_dir: Path) -> tuple[Pat
         )
     )
     return save_path, atom_array
+
+
+def sequence_to_spoof_dictionary(
+    *,
+    name: str,
+    sequence: str,
+    chain_id: str = "B",
+) -> dict[str, Any]:
+    """Build the cifutils component dictionary used to spoof a peptide/PTM CIF."""
+    return {
+        "name": name,
+        "components": [{"seq": sequence, "chain_id": chain_id}],
+    }
 
 
 def clean_cif_file(cif_path: str | Path) -> Path:
@@ -227,13 +244,12 @@ def spoof_cif_from_sequence(
     chain_id: str = "B",
 ) -> tuple[Path, Any]:
     """Write a spoofed CIF for a polymer sequence that may include PTMs."""
-    out_dir = Path(out_dir).expanduser().resolve()
-    out_dir.mkdir(parents=True, exist_ok=True)
-    cif_path, atom_array = _spoof_cif_from_dictionary(
-        item={
-            "name": name,
-            "components": [{"seq": sequence, "chain_id": chain_id}],
-        },
+    cif_path, atom_array = spoof_cif_from_dictionary(
+        item=sequence_to_spoof_dictionary(
+            name=name,
+            sequence=sequence,
+            chain_id=chain_id,
+        ),
         out_dir=out_dir,
     )
     clean_cif_file(cif_path)

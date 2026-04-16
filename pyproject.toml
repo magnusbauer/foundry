@@ -48,6 +48,7 @@ dependencies = [
     "ipykernel>=6.31.0",
     "assertpy",
     "toolz",
+    "plotly>=5.0.0,<7",
 ]
 
 

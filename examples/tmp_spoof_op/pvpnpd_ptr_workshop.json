@@ -1,0 +1,15 @@
+{
+  "ptr_workshop": {
+    "input": "/net/scratch/magnusb/43_workshop/ptm_foundry/examples/workshop_outputs/ptr_workshop.cif",
+    "contig": "100-100,/0,B1-14",
+    "dialect": 2,
+    "infer_ori_strategy": "hotspots",
+    "redesign_motif_sidechains": false,
+    "select_fixed_atoms": false,
+    "select_hotspots": {
+      "B7": "P,O1P,O2P,O3P,OH"
+    },
+    "select_buried": {},
+    "select_hbond_acceptor": {}
+  }
+}

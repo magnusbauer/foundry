@@ -1,0 +1,271 @@
+data_tmp_spoof.cif
+#
+_entry.id       tmp_spoof.cif
+_entry.author   magnusb
+_entry.date     2026-04-16
+_entry.time     03:11:18
+#
+_entity_poly.entity_id                      0
+_entity_poly.type                           polypeptide(l)
+_entity_poly.nstd_linkage                   no
+_entity_poly.nstd_monomer                   yes
+_entity_poly.pdbx_seq_one_letter_code       PVPNPDXEPIRKGQ
+_entity_poly.pdbx_seq_one_letter_code_can   PVPNPDYEPIRKGQ
+_entity_poly.pdbx_strand_id                 B
+_entity_poly.pdbx_target_identifier         ?
+#
+loop_
+_struct_conn.id 
+_struct_conn.conn_type_id 
+_struct_conn.pdbx_value_order 
+_struct_conn.ptnr1_label_asym_id 
+_struct_conn.ptnr2_label_asym_id 
+_struct_conn.ptnr1_label_comp_id 
+_struct_conn.ptnr2_label_comp_id 
+_struct_conn.ptnr1_label_seq_id 
+_struct_conn.ptnr2_label_seq_id 
+_struct_conn.ptnr1_label_atom_id 
+_struct_conn.ptnr2_label_atom_id 
+_struct_conn.pdbx_ptnr1_PDB_ins_code 
+_struct_conn.pdbx_ptnr2_PDB_ins_code 
+1 covale sing B B ASP PTR 6 7 C N . .
+2 covale sing B B PTR GLU 7 8 C N . .
+#
+loop_
+_chem_comp_bond.pdbx_ordinal 
+_chem_comp_bond.comp_id 
+_chem_comp_bond.atom_id_1 
+_chem_comp_bond.atom_id_2 
+_chem_comp_bond.value_order 
+_chem_comp_bond.pdbx_aromatic_flag 
+_chem_comp_bond.pdbx_stereo_config 
+1  PRO N   CA  SING N ?
+2  PRO N   CD  SING N ?
+3  PRO CA  C   SING N ?
+4  PRO CA  CB  SING N ?
+5  PRO C   O   DOUB N ?
+6  PRO CB  CG  SING N ?
+7  PRO CG  CD  SING N ?
+8  VAL N   CA  SING N ?
+9  VAL CA  C   SING N ?
+10 VAL CA  CB  SING N ?
+11 VAL C   O   DOUB N ?
+12 VAL CB  CG1 SING N ?
+13 VAL CB  CG2 SING N ?
+14 ASN N   CA  SING N ?
+15 ASN CA  C   SING N ?
+16 ASN CA  CB  SING N ?
+17 ASN C   O   DOUB N ?
+18 ASN CB  CG  SING N ?
+19 ASN CG  OD1 DOUB N ?
+20 ASN CG  ND2 SING N ?
+21 ASP N   CA  SING N ?
+22 ASP CA  C   SING N ?
+23 ASP CA  CB  SING N ?
+24 ASP C   O   DOUB N ?
+25 ASP CB  CG  SING N ?
+26 ASP CG  OD1 DOUB N ?
+27 ASP CG  OD2 SING N ?
+28 PTR N   CA  SING N ?
+29 PTR CA  C   SING N ?
+30 PTR CA  CB  SING N ?
+31 PTR C   O   DOUB N ?
+32 PTR CB  CG  SING N ?
+33 PTR CG  CD1 DOUB Y ?
+34 PTR CG  CD2 SING Y ?
+35 PTR CD1 CE1 SING Y ?
+36 PTR CD2 CE2 DOUB Y ?
+37 PTR CE1 CZ  DOUB Y ?
+38 PTR CE2 CZ  SING Y ?
+39 PTR CZ  OH  SING N ?
+40 PTR OH  P   SING N ?
+41 PTR P   O1P DOUB N ?
+42 PTR P   O2P SING N ?
+43 PTR P   O3P SING N ?
+44 GLU N   CA  SING N ?
+45 GLU CA  C   SING N ?
+46 GLU CA  CB  SING N ?
+47 GLU C   O   DOUB N ?
+48 GLU CB  CG  SING N ?
+49 GLU CG  CD  SING N ?
+50 GLU CD  OE1 DOUB N ?
+51 GLU CD  OE2 SING N ?
+52 ILE N   CA  SING N ?
+53 ILE CA  C   SING N ?
+54 ILE CA  CB  SING N ?
+55 ILE C   O   DOUB N ?
+56 ILE CB  CG1 SING N ?
+57 ILE CB  CG2 SING N ?
+58 ILE CG1 CD1 SING N ?
+59 ARG N   CA  SING N ?
+60 ARG CA  C   SING N ?
+61 ARG CA  CB  SING N ?
+62 ARG C   O   DOUB N ?
+63 ARG CB  CG  SING N ?
+64 ARG CG  CD  SING N ?
+65 ARG CD  NE  SING N ?
+66 ARG NE  CZ  SING N ?
+67 ARG CZ  NH1 SING N ?
+68 ARG CZ  NH2 DOUB N ?
+69 LYS N   CA  SING N ?
+70 LYS CA  C   SING N ?
+71 LYS CA  CB  SING N ?
+72 LYS C   O   DOUB N ?
+73 LYS CB  CG  SING N ?
+74 LYS CG  CD  SING N ?
+75 LYS CD  CE  SING N ?
+76 LYS CE  NZ  SING N ?
+77 GLY N   CA  SING N ?
+78 GLY CA  C   SING N ?
+79 GLY C   O   DOUB N ?
+80 GLN N   CA  SING N ?
+81 GLN CA  C   SING N ?
+82 GLN CA  CB  SING N ?
+83 GLN C   O   DOUB N ?
+84 GLN C   OXT SING N ?
+85 GLN CB  CG  SING N ?
+86 GLN CG  CD  SING N ?
+87 GLN CD  OE1 DOUB N ?
+88 GLN CD  NE2 SING N ?
+#
+loop_
+_atom_site.group_PDB 
+_atom_site.type_symbol 
+_atom_site.label_atom_id 
+_atom_site.label_alt_id 
+_atom_site.label_comp_id 
+_atom_site.label_asym_id 
+_atom_site.label_entity_id 
+_atom_site.label_seq_id 
+_atom_site.pdbx_PDB_ins_code 
+_atom_site.auth_seq_id 
+_atom_site.auth_comp_id 
+_atom_site.auth_asym_id 
+_atom_site.auth_atom_id 
+_atom_site.id 
+_atom_site.B_iso_or_equiv 
+_atom_site.occupancy 
+_atom_site.pdbx_formal_charge 
+_atom_site.Cartn_x 
+_atom_site.Cartn_y 
+_atom_site.Cartn_z 
+_atom_site.pdbx_PDB_model_num 
+ATOM   N N   . PRO B 0 1  . 1  PRO B N   1   0 1.0 ?  0 0 0 1
+ATOM   C CA  . PRO B 0 1  . 1  PRO B CA  2   0 1.0 ?  0 0 0 1
+ATOM   C C   . PRO B 0 1  . 1  PRO B C   3   0 1.0 ?  0 0 0 1
+ATOM   O O   . PRO B 0 1  . 1  PRO B O   4   0 1.0 ?  0 0 0 1
+ATOM   C CB  . PRO B 0 1  . 1  PRO B CB  5   0 1.0 ?  0 0 0 1
+ATOM   C CG  . PRO B 0 1  . 1  PRO B CG  6   0 1.0 ?  0 0 0 1
+ATOM   C CD  . PRO B 0 1  . 1  PRO B CD  7   0 1.0 ?  0 0 0 1
+ATOM   N N   . VAL B 0 2  . 2  VAL B N   16  0 1.0 ?  0 0 0 1
+ATOM   C CA  . VAL B 0 2  . 2  VAL B CA  17  0 1.0 ?  0 0 0 1
+ATOM   C C   . VAL B 0 2  . 2  VAL B C   18  0 1.0 ?  0 0 0 1
+ATOM   O O   . VAL B 0 2  . 2  VAL B O   19  0 1.0 ?  0 0 0 1
+ATOM   C CB  . VAL B 0 2  . 2  VAL B CB  20  0 1.0 ?  0 0 0 1
+ATOM   C CG1 . VAL B 0 2  . 2  VAL B CG1 21  0 1.0 ?  0 0 0 1
+ATOM   C CG2 . VAL B 0 2  . 2  VAL B CG2 22  0 1.0 ?  0 0 0 1
+ATOM   N N   . PRO B 0 3  . 3  PRO B N   32  0 1.0 ?  0 0 0 1
+ATOM   C CA  . PRO B 0 3  . 3  PRO B CA  33  0 1.0 ?  0 0 0 1
+ATOM   C C   . PRO B 0 3  . 3  PRO B C   34  0 1.0 ?  0 0 0 1
+ATOM   O O   . PRO B 0 3  . 3  PRO B O   35  0 1.0 ?  0 0 0 1
+ATOM   C CB  . PRO B 0 3  . 3  PRO B CB  36  0 1.0 ?  0 0 0 1
+ATOM   C CG  . PRO B 0 3  . 3  PRO B CG  37  0 1.0 ?  0 0 0 1
+ATOM   C CD  . PRO B 0 3  . 3  PRO B CD  38  0 1.0 ?  0 0 0 1
+ATOM   N N   . ASN B 0 4  . 4  ASN B N   46  0 1.0 ?  0 0 0 1
+ATOM   C CA  . ASN B 0 4  . 4  ASN B CA  47  0 1.0 ?  0 0 0 1
+ATOM   C C   . ASN B 0 4  . 4  ASN B C   48  0 1.0 ?  0 0 0 1
+ATOM   O O   . ASN B 0 4  . 4  ASN B O   49  0 1.0 ?  0 0 0 1
+ATOM   C CB  . ASN B 0 4  . 4  ASN B CB  50  0 1.0 ?  0 0 0 1
+ATOM   C CG  . ASN B 0 4  . 4  ASN B CG  51  0 1.0 ?  0 0 0 1
+ATOM   O OD1 . ASN B 0 4  . 4  ASN B OD1 52  0 1.0 ?  0 0 0 1
+ATOM   N ND2 . ASN B 0 4  . 4  ASN B ND2 53  0 1.0 ?  0 0 0 1
+ATOM   N N   . PRO B 0 5  . 5  PRO B N   60  0 1.0 ?  0 0 0 1
+ATOM   C CA  . PRO B 0 5  . 5  PRO B CA  61  0 1.0 ?  0 0 0 1
+ATOM   C C   . PRO B 0 5  . 5  PRO B C   62  0 1.0 ?  0 0 0 1
+ATOM   O O   . PRO B 0 5  . 5  PRO B O   63  0 1.0 ?  0 0 0 1
+ATOM   C CB  . PRO B 0 5  . 5  PRO B CB  64  0 1.0 ?  0 0 0 1
+ATOM   C CG  . PRO B 0 5  . 5  PRO B CG  65  0 1.0 ?  0 0 0 1
+ATOM   C CD  . PRO B 0 5  . 5  PRO B CD  66  0 1.0 ?  0 0 0 1
+ATOM   N N   . ASP B 0 6  . 6  ASP B N   74  0 1.0 ?  0 0 0 1
+ATOM   C CA  . ASP B 0 6  . 6  ASP B CA  75  0 1.0 ?  0 0 0 1
+ATOM   C C   . ASP B 0 6  . 6  ASP B C   76  0 1.0 ?  0 0 0 1
+ATOM   O O   . ASP B 0 6  . 6  ASP B O   77  0 1.0 ?  0 0 0 1
+ATOM   C CB  . ASP B 0 6  . 6  ASP B CB  78  0 1.0 ?  0 0 0 1
+ATOM   C CG  . ASP B 0 6  . 6  ASP B CG  79  0 1.0 ?  0 0 0 1
+ATOM   O OD1 . ASP B 0 6  . 6  ASP B OD1 80  0 1.0 ?  0 0 0 1
+ATOM   O OD2 . ASP B 0 6  . 6  ASP B OD2 81  0 1.0 ?  0 0 0 1
+HETATM N N   . PTR B 0 7  . 7  PTR B N   87  0 1.0 ?  0 0 0 1
+HETATM C CA  . PTR B 0 7  . 7  PTR B CA  88  0 1.0 ?  0 0 0 1
+HETATM C C   . PTR B 0 7  . 7  PTR B C   89  0 1.0 ?  0 0 0 1
+HETATM O O   . PTR B 0 7  . 7  PTR B O   90  0 1.0 ?  0 0 0 1
+HETATM C CB  . PTR B 0 7  . 7  PTR B CB  91  0 1.0 ?  0 0 0 1
+HETATM C CG  . PTR B 0 7  . 7  PTR B CG  92  0 1.0 ?  0 0 0 1
+HETATM C CD1 . PTR B 0 7  . 7  PTR B CD1 93  0 1.0 ?  0 0 0 1
+HETATM C CD2 . PTR B 0 7  . 7  PTR B CD2 94  0 1.0 ?  0 0 0 1
+HETATM C CE1 . PTR B 0 7  . 7  PTR B CE1 95  0 1.0 ?  0 0 0 1
+HETATM C CE2 . PTR B 0 7  . 7  PTR B CE2 96  0 1.0 ?  0 0 0 1
+HETATM C CZ  . PTR B 0 7  . 7  PTR B CZ  97  0 1.0 ?  0 0 0 1
+HETATM O OH  . PTR B 0 7  . 7  PTR B OH  98  0 1.0 ?  0 0 0 1
+HETATM P P   . PTR B 0 7  . 7  PTR B P   99  0 1.0 ?  0 0 0 1
+HETATM O O1P . PTR B 0 7  . 7  PTR B O1P 100 0 1.0 ?  0 0 0 1
+HETATM O O2P . PTR B 0 7  . 7  PTR B O2P 101 0 1.0 ?  0 0 0 1
+HETATM O O3P . PTR B 0 7  . 7  PTR B O3P 102 0 1.0 ?  0 0 0 1
+ATOM   N N   . GLU B 0 8  . 8  GLU B N   113 0 1.0 ?  0 0 0 1
+ATOM   C CA  . GLU B 0 8  . 8  GLU B CA  114 0 1.0 ?  0 0 0 1
+ATOM   C C   . GLU B 0 8  . 8  GLU B C   115 0 1.0 ?  0 0 0 1
+ATOM   O O   . GLU B 0 8  . 8  GLU B O   116 0 1.0 ?  0 0 0 1
+ATOM   C CB  . GLU B 0 8  . 8  GLU B CB  117 0 1.0 ?  0 0 0 1
+ATOM   C CG  . GLU B 0 8  . 8  GLU B CG  118 0 1.0 ?  0 0 0 1
+ATOM   C CD  . GLU B 0 8  . 8  GLU B CD  119 0 1.0 ?  0 0 0 1
+ATOM   O OE1 . GLU B 0 8  . 8  GLU B OE1 120 0 1.0 ?  0 0 0 1
+ATOM   O OE2 . GLU B 0 8  . 8  GLU B OE2 121 0 1.0 ?  0 0 0 1
+ATOM   N N   . PRO B 0 9  . 9  PRO B N   129 0 1.0 ?  0 0 0 1
+ATOM   C CA  . PRO B 0 9  . 9  PRO B CA  130 0 1.0 ?  0 0 0 1
+ATOM   C C   . PRO B 0 9  . 9  PRO B C   131 0 1.0 ?  0 0 0 1
+ATOM   O O   . PRO B 0 9  . 9  PRO B O   132 0 1.0 ?  0 0 0 1
+ATOM   C CB  . PRO B 0 9  . 9  PRO B CB  133 0 1.0 ?  0 0 0 1
+ATOM   C CG  . PRO B 0 9  . 9  PRO B CG  134 0 1.0 ?  0 0 0 1
+ATOM   C CD  . PRO B 0 9  . 9  PRO B CD  135 0 1.0 ?  0 0 0 1
+ATOM   N N   . ILE B 0 10 . 10 ILE B N   143 0 1.0 ?  0 0 0 1
+ATOM   C CA  . ILE B 0 10 . 10 ILE B CA  144 0 1.0 ?  0 0 0 1
+ATOM   C C   . ILE B 0 10 . 10 ILE B C   145 0 1.0 ?  0 0 0 1
+ATOM   O O   . ILE B 0 10 . 10 ILE B O   146 0 1.0 ?  0 0 0 1
+ATOM   C CB  . ILE B 0 10 . 10 ILE B CB  147 0 1.0 ?  0 0 0 1
+ATOM   C CG1 . ILE B 0 10 . 10 ILE B CG1 148 0 1.0 ?  0 0 0 1
+ATOM   C CG2 . ILE B 0 10 . 10 ILE B CG2 149 0 1.0 ?  0 0 0 1
+ATOM   C CD1 . ILE B 0 10 . 10 ILE B CD1 150 0 1.0 ?  0 0 0 1
+ATOM   N N   . ARG B 0 11 . 11 ARG B N   162 0 1.0 ?  0 0 0 1
+ATOM   C CA  . ARG B 0 11 . 11 ARG B CA  163 0 1.0 ?  0 0 0 1
+ATOM   C C   . ARG B 0 11 . 11 ARG B C   164 0 1.0 ?  0 0 0 1
+ATOM   O O   . ARG B 0 11 . 11 ARG B O   165 0 1.0 ?  0 0 0 1
+ATOM   C CB  . ARG B 0 11 . 11 ARG B CB  166 0 1.0 ?  0 0 0 1
+ATOM   C CG  . ARG B 0 11 . 11 ARG B CG  167 0 1.0 ?  0 0 0 1
+ATOM   C CD  . ARG B 0 11 . 11 ARG B CD  168 0 1.0 ?  0 0 0 1
+ATOM   N NE  . ARG B 0 11 . 11 ARG B NE  169 0 1.0 ?  0 0 0 1
+ATOM   C CZ  . ARG B 0 11 . 11 ARG B CZ  170 0 1.0 ?  0 0 0 1
+ATOM   N NH1 . ARG B 0 11 . 11 ARG B NH1 171 0 1.0 ?  0 0 0 1
+ATOM   N NH2 . ARG B 0 11 . 11 ARG B NH2 172 0 1.0 +1 0 0 0 1
+ATOM   N N   . LYS B 0 12 . 12 LYS B N   186 0 1.0 ?  0 0 0 1
+ATOM   C CA  . LYS B 0 12 . 12 LYS B CA  187 0 1.0 ?  0 0 0 1
+ATOM   C C   . LYS B 0 12 . 12 LYS B C   188 0 1.0 ?  0 0 0 1
+ATOM   O O   . LYS B 0 12 . 12 LYS B O   189 0 1.0 ?  0 0 0 1
+ATOM   C CB  . LYS B 0 12 . 12 LYS B CB  190 0 1.0 ?  0 0 0 1
+ATOM   C CG  . LYS B 0 12 . 12 LYS B CG  191 0 1.0 ?  0 0 0 1
+ATOM   C CD  . LYS B 0 12 . 12 LYS B CD  192 0 1.0 ?  0 0 0 1
+ATOM   C CE  . LYS B 0 12 . 12 LYS B CE  193 0 1.0 ?  0 0 0 1
+ATOM   N NZ  . LYS B 0 12 . 12 LYS B NZ  194 0 1.0 +1 0 0 0 1
+ATOM   N N   . GLY B 0 13 . 13 GLY B N   208 0 1.0 ?  0 0 0 1
+ATOM   C CA  . GLY B 0 13 . 13 GLY B CA  209 0 1.0 ?  0 0 0 1
+ATOM   C C   . GLY B 0 13 . 13 GLY B C   210 0 1.0 ?  0 0 0 1
+ATOM   O O   . GLY B 0 13 . 13 GLY B O   211 0 1.0 ?  0 0 0 1
+ATOM   N N   . GLN B 0 14 . 14 GLN B N   215 0 1.0 ?  0 0 0 1
+ATOM   C CA  . GLN B 0 14 . 14 GLN B CA  216 0 1.0 ?  0 0 0 1
+ATOM   C C   . GLN B 0 14 . 14 GLN B C   217 0 1.0 ?  0 0 0 1
+ATOM   O O   . GLN B 0 14 . 14 GLN B O   218 0 1.0 ?  0 0 0 1
+ATOM   C CB  . GLN B 0 14 . 14 GLN B CB  219 0 1.0 ?  0 0 0 1
+ATOM   C CG  . GLN B 0 14 . 14 GLN B CG  220 0 1.0 ?  0 0 0 1
+ATOM   C CD  . GLN B 0 14 . 14 GLN B CD  221 0 1.0 ?  0 0 0 1
+ATOM   O OE1 . GLN B 0 14 . 14 GLN B OE1 222 0 1.0 ?  0 0 0 1
+ATOM   N NE2 . GLN B 0 14 . 14 GLN B NE2 223 0 1.0 ?  0 0 0 1
+ATOM   O OXT . GLN B 0 14 . 14 GLN B OXT 224 0 1.0 ?  0 0 0 1
+#

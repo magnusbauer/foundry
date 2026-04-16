@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 from enum import StrEnum
 from pathlib import Path
 from typing import Any, ClassVar
@@ -29,7 +30,12 @@ from mpnn.inference_engines.mpnn import MPNNInferenceEngine
 from rf3.inference_engines.rf3 import RF3InferenceEngine
 from rf3.utils.inference import InferenceInput
 from rfd3.engine import RFD3InferenceConfig, RFD3InferenceEngine
-from spoof_cif import build_ptm_binder_workshop_inputs, extract_chain_sequence
+from spoof_cif import (
+    build_ptm_binder_workshop_inputs,
+    extract_chain_sequence,
+    find_ptm_positions,
+    tokenize_polymer_sequence,
+)
 
 PHOSPHATE_ATOMS = ("P", "O1P", "O2P", "O3P")
 HBOND_CUTOFF_DIST = 2.5
@@ -51,6 +57,62 @@ def _ensure_dir(path: str | Path) -> Path:
     path = Path(path).expanduser().resolve()
     path.mkdir(parents=True, exist_ok=True)
     return path
+
+
+def _load_or_copy_workshop_inputs(
+    *,
+    name: str,
+    sequence: str,
+    binder_length: int,
+    out_dir: str | Path,
+    target_chain_id: str = "B",
+    ptm_resname: str = "PTR",
+    reuse_existing_dir: str | Path,
+    reuse_existing_name: str | None = None,
+) -> dict[str, Any]:
+    out_dir = _ensure_dir(out_dir)
+    reuse_existing_dir = Path(reuse_existing_dir).expanduser().resolve()
+    source_name = reuse_existing_name or name
+    source_cif_path = reuse_existing_dir / f"{source_name}.cif"
+    source_json_path = reuse_existing_dir / f"{source_name}.json"
+
+    missing = [
+        str(path)
+        for path in (source_cif_path, source_json_path)
+        if not path.exists()
+    ]
+    if missing:
+        raise FileNotFoundError(
+            "Could not reuse workshop setup because these files are missing: "
+            + ", ".join(missing)
+        )
+
+    dest_cif_path = out_dir / f"{name}.cif"
+    dest_json_path = out_dir / f"{name}.json"
+    if source_cif_path.resolve() != dest_cif_path.resolve():
+        shutil.copy2(source_cif_path, dest_cif_path)
+    if source_json_path.resolve() != dest_json_path.resolve():
+        shutil.copy2(source_json_path, dest_json_path)
+
+    tokens = tokenize_polymer_sequence(sequence)
+    ptm_positions = find_ptm_positions(tokens, {ptm_resname})
+    if not ptm_positions:
+        raise ValueError(f"Sequence {sequence!r} does not contain {ptm_resname}.")
+
+    return {
+        "name": name,
+        "sequence": sequence,
+        "tokens": tokens,
+        "sequence_length": len(tokens),
+        "ptm_positions": ptm_positions,
+        "ptm_residue_id": next(iter(ptm_positions)),
+        "cif_path": dest_cif_path.resolve(),
+        "json_path": dest_json_path.resolve(),
+        "rfd3_input": json.loads(dest_json_path.read_text()),
+        "reused_existing": True,
+        "reuse_source_name": source_name,
+        "reuse_source_dir": str(reuse_existing_dir),
+    }
 
 
 def _file_stem_and_extension(path: Path) -> tuple[str, str | None]:
@@ -399,19 +461,33 @@ class SpoofPTMTarget(OperationDefinition):
         ptm_resname: str = "PTR"
         example_name: str = "pvpnpd_ptr_workshop"
         output_dir: str | None = None
+        reuse_existing_dir: str | None = None
+        reuse_existing_name: str | None = None
 
     params: Params
 
     def execute(self, inputs: ExecuteInput) -> dict[str, Any]:
         output_dir = _ensure_dir(self.params.output_dir or inputs.execute_dir)
-        workshop = build_ptm_binder_workshop_inputs(
-            name=self.params.example_name,
-            sequence=self.params.sequence,
-            binder_length=self.params.binder_length,
-            out_dir=output_dir,
-            target_chain_id=self.params.target_chain_id,
-            ptm_resname=self.params.ptm_resname,
-        )
+        if self.params.reuse_existing_dir:
+            workshop = _load_or_copy_workshop_inputs(
+                name=self.params.example_name,
+                sequence=self.params.sequence,
+                binder_length=self.params.binder_length,
+                out_dir=output_dir,
+                target_chain_id=self.params.target_chain_id,
+                ptm_resname=self.params.ptm_resname,
+                reuse_existing_dir=self.params.reuse_existing_dir,
+                reuse_existing_name=self.params.reuse_existing_name,
+            )
+        else:
+            workshop = build_ptm_binder_workshop_inputs(
+                name=self.params.example_name,
+                sequence=self.params.sequence,
+                binder_length=self.params.binder_length,
+                out_dir=output_dir,
+                target_chain_id=self.params.target_chain_id,
+                ptm_resname=self.params.ptm_resname,
+            )
         workshop["cif_path"] = str(Path(workshop["cif_path"]).resolve())
         workshop["json_path"] = str(Path(workshop["json_path"]).resolve())
         workshop.pop("atom_array", None)
@@ -461,6 +537,9 @@ class SpoofPTMTarget(OperationDefinition):
                 "json_path": str(json_path),
                 "ptm_residue_id": workshop["ptm_residue_id"],
                 "tokens": workshop["tokens"],
+                "reused_existing": workshop.get("reused_existing", False),
+                "reuse_source_name": workshop.get("reuse_source_name"),
+                "reuse_source_dir": workshop.get("reuse_source_dir"),
             },
         )
 
