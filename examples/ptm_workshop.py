@@ -1274,14 +1274,15 @@ def make_studio_metric_browser(
     y_dropdown.observe(render, names="value")
     z_dropdown.observe(render, names="value")
 
+    dropdown_row = widgets.HBox([x_dropdown, y_dropdown, z_dropdown])
+    left_panel = widgets.VBox([dropdown_row, structure_panel])
     children: list[Any] = [
         widgets.HBox([prev_button, next_button, status_html]),
-        widgets.HBox([x_dropdown, y_dropdown, z_dropdown]),
     ]
     if note_html:
         children.append(widgets.HTML(note_html))
     children.append(widgets.HBox(
-        [structure_panel, plot_panel],
+        [left_panel, plot_panel],
         layout=widgets.Layout(justify_content="space-between"),
     ))
 
