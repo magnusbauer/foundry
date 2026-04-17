@@ -1142,11 +1142,7 @@ def make_studio_metric_browser(
     structure_viewer: widgets.Widget | None = None
     if isinstance(initial_structure, MolstarViewSpec):
         structure_viewer = _molstar_viewer(initial_structure)
-        struct_css_width = f"{initial_structure.width}px"
-        structure_panel: widgets.Widget = widgets.Box(
-            [structure_viewer],
-            layout=widgets.Layout(width=struct_css_width),
-        )
+        structure_panel: widgets.Widget = structure_viewer
     else:
         structure_output = widgets.Output(layout=widgets.Layout(width="54%"))
         with structure_output:
@@ -1284,7 +1280,13 @@ def make_studio_metric_browser(
     ]
     if note_html:
         children.append(widgets.HTML(note_html))
-    children.append(widgets.HBox([structure_panel, plot_panel]))
+    struct_width = initial_structure.width if isinstance(initial_structure, MolstarViewSpec) else None
+    hbox_layout = (
+        widgets.Layout(width=f"{struct_width + plot_width}px")
+        if struct_width is not None
+        else widgets.Layout()
+    )
+    children.append(widgets.HBox([structure_panel, plot_panel], layout=hbox_layout))
 
     browser = widgets.VBox(children)
     render()
