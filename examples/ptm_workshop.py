@@ -1280,13 +1280,10 @@ def make_studio_metric_browser(
     ]
     if note_html:
         children.append(widgets.HTML(note_html))
-    struct_width = initial_structure.width if isinstance(initial_structure, MolstarViewSpec) else None
-    hbox_layout = (
-        widgets.Layout(width=f"{struct_width + plot_width}px")
-        if struct_width is not None
-        else widgets.Layout()
-    )
-    children.append(widgets.HBox([structure_panel, plot_panel], layout=hbox_layout))
+    children.append(widgets.HBox(
+        [structure_panel, plot_panel],
+        layout=widgets.Layout(justify_content="space-between"),
+    ))
 
     browser = widgets.VBox(children)
     render()
