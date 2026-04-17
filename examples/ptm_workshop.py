@@ -291,7 +291,7 @@ def _molstar_viewer(
 
     viewer = PDBeMolstar(
         height=f"{spec.height}px",
-        width="100%",
+        width=f"{spec.width}px",
         hide_controls=True,
         hide_expand_icon=True,
     )
