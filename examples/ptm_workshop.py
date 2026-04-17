@@ -1067,10 +1067,14 @@ def _build_metric_scatter(
 def _make_figure_widget(
     fig: go.Figure,
     *,
-    width: str = "46%",
+    pixel_width: int | None = None,
 ) -> tuple[go.FigureWidget, widgets.Widget]:
+    if pixel_width is not None:
+        fig = go.Figure(fig)
+        fig.update_layout(autosize=False, width=pixel_width)
     fw = go.FigureWidget(fig)
-    panel = widgets.Box([fw], layout=widgets.Layout(width=width))
+    css_width = f"{pixel_width}px" if pixel_width is not None else "46%"
+    panel = widgets.Box([fw], layout=widgets.Layout(width=css_width))
     return fw, panel
 
 
@@ -1089,6 +1093,7 @@ def make_studio_metric_browser(
     note_html: str | None = None,
     table_columns: Sequence[str] | None = None,
     plot_height: int = 390,
+    plot_width: int = 420,
 ) -> widgets.Widget:
     browser_df = metrics_df.reset_index(drop=True).copy()
     if len(records) != len(browser_df):
@@ -1137,9 +1142,10 @@ def make_studio_metric_browser(
     structure_viewer: widgets.Widget | None = None
     if isinstance(initial_structure, MolstarViewSpec):
         structure_viewer = _molstar_viewer(initial_structure)
+        struct_css_width = f"{initial_structure.width}px"
         structure_panel: widgets.Widget = widgets.Box(
             [structure_viewer],
-            layout=widgets.Layout(width="54%"),
+            layout=widgets.Layout(width=struct_css_width),
         )
     else:
         structure_output = widgets.Output(layout=widgets.Layout(width="54%"))
@@ -1157,7 +1163,7 @@ def make_studio_metric_browser(
         metric_labels=metric_labels,
         plot_height=plot_height,
     )
-    figure_widget, plot_panel = _make_figure_widget(initial_plot, width="46%")
+    figure_widget, plot_panel = _make_figure_widget(initial_plot, pixel_width=plot_width)
 
     def resolve_structure(index: int) -> Any:
         if index not in structure_cache:
@@ -1249,6 +1255,8 @@ def make_studio_metric_browser(
 
             figure_widget.layout.xaxis.title.text = x_label
             figure_widget.layout.yaxis.title.text = y_label
+            figure_widget.layout.autosize = False
+            figure_widget.layout.width = plot_width
 
     def _on_scatter_click(trace: Any, points: Any, selector: Any) -> None:
         if points.point_inds:
