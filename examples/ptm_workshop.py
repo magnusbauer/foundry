@@ -1499,12 +1499,12 @@ def make_studio_metric_browser(
     del table_columns
 
     current_index = {"value": 0}
-    prev_button = widgets.Button(description="Previous", layout=widgets.Layout(width="96px"))
-    next_button = widgets.Button(description="Next", layout=widgets.Layout(width="96px"))
+    prev_button = widgets.Button(description="< Prev", layout=widgets.Layout(width="80px"))
+    next_button = widgets.Button(description="Next >", layout=widgets.Layout(width="80px"))
     status_html = widgets.HTML(
         layout=widgets.Layout(
-            flex="1 1 220px",
-            min_width="220px",
+            flex="1 1 320px",
+            min_width="320px",
             margin="0 0 0 8px",
         )
     )
@@ -1512,19 +1512,19 @@ def make_studio_metric_browser(
         options=metric_options,
         value=default_x,
         description="X",
-        layout=widgets.Layout(width="170px"),
+        layout=widgets.Layout(width="180px"),
     )
     y_dropdown = widgets.Dropdown(
         options=metric_options,
         value=default_y,
         description="Y",
-        layout=widgets.Layout(width="170px"),
+        layout=widgets.Layout(width="180px"),
     )
     z_dropdown = widgets.Dropdown(
         options=z_metric_options,
         value=default_z,
         description="Z",
-        layout=widgets.Layout(width="170px"),
+        layout=widgets.Layout(width="180px"),
     )
     initial_structure = structure_factory(records[0])
     structure_cache: dict[int, Any] = {0: initial_structure}
@@ -1569,6 +1569,26 @@ def make_studio_metric_browser(
         pixel_width=plot_width,
         pixel_height=plot_height,
     )
+    plot_panel.layout = widgets.Layout(
+        width=f"{plot_width}px",
+        min_width="360px",
+        max_width=f"{plot_width}px",
+        height=f"{plot_height}px",
+        min_height=f"{plot_height}px",
+        max_height=f"{plot_height}px",
+        flex="0 0 auto",
+        overflow="hidden",
+    )
+
+    selected_metrics_html = widgets.HTML(
+        value="",
+        layout=widgets.Layout(
+            width=left_panel_width,
+            min_width=left_panel_width,
+            max_height="220px",
+            overflow="auto",
+        ),
+    )
 
     def resolve_structure(index: int) -> Any:
         if index not in structure_cache:
@@ -1594,8 +1614,20 @@ def make_studio_metric_browser(
         if z_column is not None:
             status_parts.append(f"{z_label}={_format_cell_value(row[z_column])}")
         status_html.value = " &nbsp; ".join(status_parts)
-        prev_button.disabled = index == 0
-        next_button.disabled = index == len(records) - 1
+        selected_metrics_html.value = _build_studio_info_panel_html(
+            step=StudioViewerStep(
+                step_number=0,
+                name=title,
+                records=records,
+                metrics_df=browser_df,
+                structure_factory=structure_factory,
+                label_column=label_column,
+                metric_columns=metric_columns,
+                metric_groups=[("Selection", resolved_metric_columns)],
+                metric_labels=metric_labels,
+            ),
+            row=row,
+        )
 
         structure = resolve_structure(index)
         if structure_viewer is not None and isinstance(structure, MolstarViewSpec):
@@ -1672,10 +1704,9 @@ def make_studio_metric_browser(
     figure_widget.data[0].on_click(_on_scatter_click)
 
     def step(delta: int) -> None:
-        current_index["value"] = min(
-            max(current_index["value"] + delta, 0),
-            len(records) - 1,
-        )
+        if not records:
+            return
+        current_index["value"] = (current_index["value"] + delta) % len(records)
         render()
 
     prev_button.on_click(lambda _: step(-1))
@@ -1690,7 +1721,7 @@ def make_studio_metric_browser(
             display="flex",
             flex_flow="row wrap",
             align_items="center",
-            width=left_panel_width,
+            width="100%",
             margin="0 0 8px 0",
         ),
     )
@@ -1700,12 +1731,12 @@ def make_studio_metric_browser(
             display="flex",
             flex_flow="row wrap",
             align_items="center",
-            width=left_panel_width,
-            margin="0 0 8px 0",
+            width="100%",
+            margin="0 0 12px 0",
         ),
     )
     left_panel = widgets.VBox(
-        [dropdown_row, structure_panel, nav_row],
+        [structure_panel, selected_metrics_html],
         layout=widgets.Layout(
             width=left_panel_width,
             min_width=left_panel_width,
@@ -1714,12 +1745,23 @@ def make_studio_metric_browser(
             margin="0 16px 16px 0",
         ),
     )
+    right_panel = widgets.VBox(
+        [dropdown_row, plot_panel],
+        layout=widgets.Layout(
+            width=f"{plot_width}px",
+            min_width="360px",
+            max_width=f"{plot_width}px",
+            flex="0 0 auto",
+            margin="0 0 16px 0",
+        ),
+    )
     children: list[Any] = []
+    children.append(nav_row)
     if note_html:
         children.append(widgets.HTML(note_html, layout=widgets.Layout(width="100%")))
     children.append(
         widgets.Box(
-            [left_panel, plot_panel],
+            [left_panel, right_panel],
             layout=_wrapping_content_layout(),
         )
     )
