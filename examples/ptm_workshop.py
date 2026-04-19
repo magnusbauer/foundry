@@ -1591,7 +1591,7 @@ def make_studio_metric_browser(
             width=panel_width,
             min_width=panel_width,
             max_width=panel_width,
-            max_height="220px",
+            max_height="320px",
             overflow="auto",
         ),
     )
