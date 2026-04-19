@@ -66,7 +66,9 @@ class StudioViewerStep:
     metrics_df: pd.DataFrame
     structure_factory: Callable[[dict[str, Any]], Any]
     label_column: str
+    artifact_id_column: str | None = None
     metric_columns: Sequence[str] | None = None
+    metric_groups: Sequence[tuple[str, Sequence[str]]] | None = None
     metric_labels: dict[str, str] | None = None
 
 
@@ -1000,36 +1002,52 @@ def _build_studio_info_panel_html(
     step: StudioViewerStep,
     row: pd.Series,
 ) -> str:
+    artifact_id_column = step.artifact_id_column or step.label_column
     metric_columns = [
         column
         for column in (
             step.metric_columns
             or [column for column in step.metrics_df.columns if column != step.label_column]
         )
-        if column in row.index and column != step.label_column
+        if column in row.index and column not in {step.label_column, artifact_id_column}
     ]
+    metric_groups = list(step.metric_groups or [(step.name, metric_columns)])
 
     parts = [_STUDIO_INFO_PANEL_CSS, '<div class="sv-info-panel">']
     name = escape(str(row[step.label_column]))
-    artifact_id = escape(step.name)
+    artifact_id = escape(str(row[artifact_id_column]))
     step_context = escape(f"Step {step.step_number} · {step.name}")
 
     parts.append(f'<div class="sv-name">{name}</div>')
     parts.append(f'<div class="sv-artifact-id">{artifact_id}</div>')
     parts.append(f'<div class="sv-step-ctx">{step_context}</div>')
 
-    if metric_columns:
-        parts.append('<div class="sv-group">')
-        parts.append('<div class="sv-group-header">Metrics</div>')
-        parts.append('<table class="sv-metrics-table">')
-        for column in metric_columns:
-            parts.append(
-                "<tr>"
-                f"<td>{escape(_metric_label(column, step.metric_labels))}</td>"
-                f"<td>{escape(_format_cell_value(row[column]))}</td>"
-                "</tr>"
-            )
-        parts.append("</table></div>")
+    if metric_groups:
+        rendered_any_group = False
+        for group_name, group_columns in metric_groups:
+            visible_columns = [
+                column
+                for column in group_columns
+                if column in row.index and column not in {step.label_column, artifact_id_column}
+            ]
+            if not visible_columns:
+                continue
+
+            rendered_any_group = True
+            parts.append('<div class="sv-group">')
+            parts.append(f'<div class="sv-group-header">{escape(group_name)}</div>')
+            parts.append('<table class="sv-metrics-table">')
+            for column in visible_columns:
+                parts.append(
+                    "<tr>"
+                    f"<td>{escape(_metric_label(column, step.metric_labels))}</td>"
+                    f"<td>{escape(_format_cell_value(row[column]))}</td>"
+                    "</tr>"
+                )
+            parts.append("</table></div>")
+
+        if not rendered_any_group:
+            parts.append("<em>No metrics for this structure.</em>")
     else:
         parts.append("<em>No metrics for this structure.</em>")
 
@@ -1549,7 +1567,9 @@ def make_studio_structure_viewer(
                 metrics_df=browser_df,
                 structure_factory=step.structure_factory,
                 label_column=step.label_column,
+                artifact_id_column=step.artifact_id_column,
                 metric_columns=step.metric_columns,
+                metric_groups=step.metric_groups,
                 metric_labels=step.metric_labels,
             )
         )
@@ -1670,7 +1690,7 @@ def make_studio_structure_viewer(
             options=options,
             value=0,
             description="",
-            layout=widgets.Layout(width="320px"),
+            layout=widgets.Layout(width="280px"),
         )
 
         def on_step_change(change: dict[str, Any]) -> None:
