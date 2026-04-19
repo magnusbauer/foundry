@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import base64
+import json
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from html import escape
@@ -48,6 +50,8 @@ _MOLSTAR_GREY = {"r": 148, "g": 163, "b": 184}
 _MOLSTAR_RED = {"r": 220, "g": 38, "b": 38}
 _MOLSTAR_ORANGE = {"r": 245, "g": 158, "b": 11}
 _MOLSTAR_SLATE = {"r": 100, "g": 116, "b": 139}
+_PDBE_MOLSTAR_CSS_URL = "https://cdn.jsdelivr.net/npm/pdbe-molstar@3.10.1/build/pdbe-molstar-light.css"
+_PDBE_MOLSTAR_JS_URL = "https://cdn.jsdelivr.net/npm/pdbe-molstar@3.10.1/build/pdbe-molstar-plugin.js"
 
 
 @dataclass(slots=True)
@@ -70,6 +74,226 @@ class StudioViewerStep:
     metric_columns: Sequence[str] | None = None
     metric_groups: Sequence[tuple[str, Sequence[str]]] | None = None
     metric_labels: dict[str, str] | None = None
+
+
+def _molstar_query_param(entry: dict[str, Any]) -> dict[str, Any]:
+    query: dict[str, Any] = {}
+    for key in ("auth_asym_id", "struct_asym_id", "label_comp_id", "entity_id"):
+        value = entry.get(key)
+        if value is not None:
+            query[key] = value
+
+    residue_number = entry.get("auth_residue_number")
+    if residue_number is not None:
+        query["start_residue_number"] = int(residue_number)
+        query["end_residue_number"] = int(residue_number)
+
+    for key in ("sideChain", "focus", "tooltip", "representation", "representationColor"):
+        value = entry.get(key)
+        if value is not None:
+            query[key] = value
+
+    color = entry.get("color")
+    if color is not None:
+        query["color"] = color
+    return query
+
+
+def _molstar_selection_params(
+    color_data: dict[str, Any] | None,
+) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
+    if not color_data:
+        return None, None
+
+    selection_entries: list[dict[str, Any]] = []
+    tooltip_entries: list[dict[str, Any]] = []
+    for entry in color_data.get("data") or []:
+        query = _molstar_query_param(entry)
+        if not query:
+            continue
+        selection_entries.append(query)
+        if query.get("tooltip"):
+            tooltip_entries.append(query)
+
+    selection: dict[str, Any] | None = None
+    if selection_entries:
+        selection = {"data": selection_entries}
+        for key in ("nonSelectedColor", "keepColors", "keepRepresentations"):
+            value = color_data.get(key)
+            if value is not None:
+                selection[key] = value
+
+    tooltips = {"data": tooltip_entries} if tooltip_entries else None
+    return selection, tooltips
+
+
+def _molstar_iframe_html(
+    spec: MolstarViewSpec,
+    *,
+    hide_controls: bool,
+) -> str:
+    raw_data = spec.custom_data.get("data")
+    if raw_data is None:
+        raise ValueError("MolstarViewSpec.custom_data must include 'data'")
+
+    if isinstance(raw_data, bytes):
+        binary = True
+        data_bytes = raw_data
+    else:
+        binary = bool(spec.custom_data.get("binary", False))
+        data_bytes = str(raw_data).encode("utf-8")
+
+    selection, tooltips = _molstar_selection_params(spec.color_data)
+    payload = {
+        "dataBase64": base64.b64encode(data_bytes).decode("ascii"),
+        "format": spec.custom_data["format"],
+        "binary": binary,
+        "selection": selection,
+        "tooltips": tooltips,
+        "hideControls": hide_controls,
+        "width": int(spec.width),
+        "height": int(spec.height),
+    }
+    payload_json = json.dumps(payload).replace("</", "<\\/")
+
+    html_doc = f"""<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="{_PDBE_MOLSTAR_CSS_URL}" />
+    <style>
+      html, body {{
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: white;
+      }}
+      #viewer-root {{
+        position: relative;
+        width: {spec.width}px;
+        height: {spec.height}px;
+        overflow: hidden;
+        background: white;
+      }}
+      #viewer-root > div,
+      #viewer-root .msp-plugin,
+      #viewer-root .msp-plugin-content,
+      #viewer-root .msp-layout-standard,
+      #viewer-root .msp-layout-main,
+      #viewer-root .msp-layout-static,
+      #viewer-root .msp-viewport {{
+        width: 100% !important;
+        height: 100% !important;
+        max-width: 100% !important;
+        max-height: 100% !important;
+        overflow: hidden !important;
+        box-sizing: border-box !important;
+      }}
+      #viewer-root canvas {{
+        max-width: 100% !important;
+        max-height: 100% !important;
+      }}
+    </style>
+  </head>
+  <body>
+    <div id="viewer-root"></div>
+    <script src="{_PDBE_MOLSTAR_JS_URL}"></script>
+    <script>
+      const payload = {payload_json};
+      const viewerRoot = document.getElementById("viewer-root");
+
+      function decodedBytes() {{
+        return Uint8Array.from(atob(payload.dataBase64), (ch) => ch.charCodeAt(0));
+      }}
+
+      function forceSize() {{
+        viewerRoot.style.width = `${{payload.width}}px`;
+        viewerRoot.style.height = `${{payload.height}}px`;
+        const selectors = [
+          ".msp-plugin",
+          ".msp-plugin-content",
+          ".msp-layout-standard",
+          ".msp-layout-main",
+          ".msp-layout-static",
+          ".msp-viewport"
+        ];
+        for (const selector of selectors) {{
+          for (const element of viewerRoot.querySelectorAll(selector)) {{
+            element.style.width = "100%";
+            element.style.height = "100%";
+            element.style.maxWidth = "100%";
+            element.style.maxHeight = "100%";
+            element.style.overflow = "hidden";
+            element.style.boxSizing = "border-box";
+          }}
+        }}
+      }}
+
+      async function init() {{
+        const bytes = decodedBytes();
+        const blob = new Blob(
+          [payload.binary ? bytes : new TextDecoder().decode(bytes)],
+          {{ type: payload.binary ? "application/octet-stream" : "text/plain" }}
+        );
+        const customDataUrl = URL.createObjectURL(blob);
+        const viewer = new PDBeMolstarPlugin();
+        const options = {{
+          customData: {{
+            url: customDataUrl,
+            format: payload.format,
+            binary: payload.binary,
+          }},
+          bgColor: "white",
+          expanded: false,
+          landscape: false,
+          reactive: false,
+          sequencePanel: false,
+          leftPanel: false,
+          rightPanel: false,
+          pdbeLink: false,
+          loadingOverlay: false,
+          hideControls: payload.hideControls,
+          hideCanvasControls: ["expand"],
+        }};
+        if (payload.selection) {{
+          options.selection = payload.selection;
+        }}
+        viewer.render(viewerRoot, options);
+        viewer.events.loadComplete.subscribe(async () => {{
+          forceSize();
+          if (payload.tooltips) {{
+            try {{
+              await viewer.visual.tooltips(payload.tooltips);
+            }} catch (error) {{
+              console.warn("Mol* tooltips setup failed", error);
+            }}
+          }}
+        }});
+        window.addEventListener("resize", forceSize);
+        if (window.ResizeObserver) {{
+          new ResizeObserver(forceSize).observe(viewerRoot);
+        }}
+        forceSize();
+      }}
+
+      init().catch((error) => {{
+        console.error("Failed to initialize Mol*", error);
+        viewerRoot.innerHTML = `<div style="padding:12px;font-family:sans-serif;color:#991b1b;">Mol* failed to load.</div>`;
+      }});
+    </script>
+  </body>
+</html>"""
+
+    iframe = (
+        f'<iframe srcdoc="{escape(html_doc, quote=True)}" '
+        f'sandbox="allow-scripts allow-same-origin" '
+        f'style="display:block;border:0;width:{spec.width}px;height:{spec.height}px;overflow:hidden;" '
+        'loading="lazy" referrerpolicy="no-referrer"></iframe>'
+    )
+    return iframe
 
 
 def extract_min_interface_pae(summary_confidences: dict[str, Any]) -> float:
@@ -299,35 +523,21 @@ def _molstar_viewer(
     widget_width: str | None = None,
     widget_height: str | None = None,
 ) -> widgets.Widget:
-    try:
-        from ipymolstar import PDBeMolstar
-    except ImportError as error:
-        msg = (
-            "ipymolstar is required for the workshop structure viewer. "
-            "Install it in the notebook setup cell."
-        )
-        raise ImportError(msg) from error
-
     resolved_width = widget_width or f"{spec.width}px"
     resolved_height = widget_height or f"{spec.height}px"
-
-    viewer = PDBeMolstar(
-        height=resolved_height,
-        width=resolved_width,
-        hide_controls=hide_controls,
-        hide_expand_icon=True,
+    viewer = widgets.HTML(
+        value=_molstar_iframe_html(spec, hide_controls=hide_controls),
+        layout=widgets.Layout(
+            width=resolved_width,
+            min_width=resolved_width,
+            max_width=resolved_width,
+            height=resolved_height,
+            min_height=resolved_height,
+            max_height=resolved_height,
+            overflow="hidden",
+        ),
     )
-    viewer.layout = widgets.Layout(
-        width=resolved_width,
-        min_width=resolved_width,
-        max_width=resolved_width,
-        height=resolved_height,
-        min_height=resolved_height,
-        max_height=resolved_height,
-        overflow="hidden",
-    )
-    viewer.custom_data = spec.custom_data
-    viewer.color_data = spec.color_data
+    setattr(viewer, "_molstar_hide_controls", hide_controls)
     return viewer
 
 
@@ -372,6 +582,11 @@ def _update_molstar_viewer(
 ) -> None:
     resolved_width = widget_width or f"{spec.width}px"
     resolved_height = widget_height or f"{spec.height}px"
+    if isinstance(viewer, widgets.HTML):
+        viewer.value = _molstar_iframe_html(
+            spec,
+            hide_controls=bool(getattr(viewer, "_molstar_hide_controls", True)),
+        )
     viewer.layout = widgets.Layout(
         width=resolved_width,
         min_width=resolved_width,
