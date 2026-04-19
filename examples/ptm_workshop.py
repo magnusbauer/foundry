@@ -1542,6 +1542,21 @@ def _make_keyboard_nav_widget() -> object:
     return _KeyboardNav()
 
 
+def _responsive_structure_width(spec: MolstarViewSpec) -> str:
+    return f"min({spec.width}px, 100%)"
+
+
+def _fixed_structure_panel_layout(width: str, spec_width: int, height: str) -> widgets.Layout:
+    return widgets.Layout(
+        width=width,
+        min_width="0",
+        max_width=f"{spec_width}px",
+        height=height,
+        flex="0 1 auto",
+        overflow="hidden",
+    )
+
+
 def make_studio_structure_viewer(
     *,
     steps: Sequence[StudioViewerStep],
@@ -1590,19 +1605,27 @@ def make_studio_structure_viewer(
     structure_output: widgets.Output | None = None
     structure_viewer: widgets.Widget | None = None
     if isinstance(initial_structure, MolstarViewSpec):
+        structure_width = _responsive_structure_width(initial_structure)
         structure_viewer = _molstar_viewer(
             initial_structure,
             hide_controls=False,
-            widget_width="100%",
+            widget_width=structure_width,
             widget_height=height,
         )
         structure_panel: widgets.Widget = widgets.Box(
             [structure_viewer],
-            layout=widgets.Layout(width="60%", height=height),
+            layout=_fixed_structure_panel_layout(
+                structure_width, initial_structure.width, height
+            ),
         )
     else:
         structure_output = widgets.Output(
-            layout=widgets.Layout(width="60%", height=height, overflow="auto")
+            layout=widgets.Layout(
+                width="100%",
+                max_height=height,
+                overflow="auto",
+                flex="1 1 auto",
+            )
         )
         with structure_output:
             display(initial_structure)
@@ -1610,7 +1633,12 @@ def make_studio_structure_viewer(
 
     metrics_html = widgets.HTML(
         value="",
-        layout=widgets.Layout(width="40%", max_height=height, overflow="auto"),
+        layout=widgets.Layout(
+            flex="1 1 320px",
+            min_width="280px",
+            max_height=height,
+            overflow="auto",
+        ),
     )
 
     slider = widgets.IntSlider(
@@ -1633,11 +1661,15 @@ def make_studio_structure_viewer(
 
         structure = resolve_structure(current_step["value"], index)
         if structure_viewer is not None and isinstance(structure, MolstarViewSpec):
+            structure_width = _responsive_structure_width(structure)
             _update_molstar_viewer(
                 structure_viewer,
                 structure,
-                widget_width="100%",
+                widget_width=structure_width,
                 widget_height=height,
+            )
+            structure_panel.layout = _fixed_structure_panel_layout(
+                structure_width, structure.width, height
             )
         elif structure_output is not None:
             with structure_output:
@@ -1675,8 +1707,18 @@ def make_studio_structure_viewer(
             on_next_click(None)
 
     keyboard_nav.observe(on_nav_request, names=["nav_request"])
+    keyboard_nav.layout = widgets.Layout(height="0px", overflow="hidden")
 
-    content = widgets.HBox([structure_panel, metrics_html])
+    content = widgets.Box(
+        [structure_panel, metrics_html],
+        layout=widgets.Layout(
+            display="flex",
+            flex_flow="row wrap",
+            align_items="flex-start",
+            width="100%",
+            overflow="hidden",
+        ),
+    )
 
     if len(normalized_steps) > 1:
         options = [
@@ -1702,9 +1744,25 @@ def make_studio_structure_viewer(
                 slider.value = 0
 
         step_dropdown.observe(on_step_change, names="value")
-        nav_bar = widgets.HBox([step_dropdown, prev_btn, slider, next_btn, label])
+        nav_bar = widgets.Box(
+            [step_dropdown, prev_btn, slider, next_btn, label],
+            layout=widgets.Layout(
+                display="flex",
+                flex_flow="row wrap",
+                align_items="center",
+                width="100%",
+            ),
+        )
     else:
-        nav_bar = widgets.HBox([prev_btn, slider, next_btn, label])
+        nav_bar = widgets.Box(
+            [prev_btn, slider, next_btn, label],
+            layout=widgets.Layout(
+                display="flex",
+                flex_flow="row wrap",
+                align_items="center",
+                width="100%",
+            ),
+        )
 
     update_display(0)
     return widgets.VBox([nav_bar, content, keyboard_nav])
