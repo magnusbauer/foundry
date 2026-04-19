@@ -308,15 +308,23 @@ def _molstar_viewer(
         )
         raise ImportError(msg) from error
 
+    resolved_width = widget_width or f"{spec.width}px"
+    resolved_height = widget_height or f"{spec.height}px"
+
     viewer = PDBeMolstar(
-        height=widget_height or f"{spec.height}px",
-        width=widget_width or f"{spec.width}px",
+        height=resolved_height,
+        width=resolved_width,
         hide_controls=hide_controls,
         hide_expand_icon=True,
     )
     viewer.layout = widgets.Layout(
-        width=widget_width or f"{spec.width}px",
-        height=widget_height or f"{spec.height}px",
+        width=resolved_width,
+        min_width=resolved_width,
+        max_width=resolved_width,
+        height=resolved_height,
+        min_height=resolved_height,
+        max_height=resolved_height,
+        overflow="hidden",
     )
     viewer.custom_data = spec.custom_data
     viewer.color_data = spec.color_data
@@ -362,9 +370,16 @@ def _update_molstar_viewer(
     widget_width: str | None = None,
     widget_height: str | None = None,
 ) -> None:
+    resolved_width = widget_width or f"{spec.width}px"
+    resolved_height = widget_height or f"{spec.height}px"
     viewer.layout = widgets.Layout(
-        width=widget_width or f"{spec.width}px",
-        height=widget_height or f"{spec.height}px",
+        width=resolved_width,
+        min_width=resolved_width,
+        max_width=resolved_width,
+        height=resolved_height,
+        min_height=resolved_height,
+        max_height=resolved_height,
+        overflow="hidden",
     )
     viewer.custom_data = spec.custom_data
     viewer.color_data = spec.color_data
@@ -1173,13 +1188,47 @@ def _make_figure_widget(
     fig: go.Figure,
     *,
     pixel_width: int | None = None,
+    pixel_height: int | None = None,
 ) -> tuple[go.FigureWidget, widgets.Widget]:
-    if pixel_width is not None:
+    if pixel_width is not None or pixel_height is not None:
         fig = go.Figure(fig)
-        fig.update_layout(autosize=False, width=pixel_width)
+        fig.update_layout(autosize=False)
+        if pixel_width is not None:
+            fig.update_layout(width=pixel_width)
+        if pixel_height is not None:
+            fig.update_layout(height=pixel_height)
     fw = go.FigureWidget(fig)
-    css_width = f"{pixel_width}px" if pixel_width is not None else "46%"
-    panel = widgets.Box([fw], layout=widgets.Layout(width=css_width))
+    css_width = f"{pixel_width}px" if pixel_width is not None else "420px"
+    layout_kwargs: dict[str, Any] = {
+        "width": css_width,
+        "overflow": "hidden",
+        "margin": "0 0 16px 0",
+    }
+    if pixel_width is not None:
+        layout_kwargs.update(
+            {
+                "min_width": css_width,
+                "max_width": css_width,
+                "flex": "0 0 auto",
+            }
+        )
+    else:
+        layout_kwargs.update(
+            {
+                "min_width": "320px",
+                "flex": "1 1 420px",
+            }
+        )
+    if pixel_height is not None:
+        css_height = f"{pixel_height}px"
+        layout_kwargs.update(
+            {
+                "height": css_height,
+                "min_height": css_height,
+                "max_height": css_height,
+            }
+        )
+    panel = widgets.Box([fw], layout=widgets.Layout(**layout_kwargs))
     return fw, panel
 
 
@@ -1235,32 +1284,57 @@ def make_studio_metric_browser(
     del table_columns
 
     current_index = {"value": 0}
-    prev_button = widgets.Button(description="Previous")
-    next_button = widgets.Button(description="Next")
-    status_html = widgets.HTML()
-    x_dropdown = widgets.Dropdown(options=metric_options, value=default_x, description="X")
-    y_dropdown = widgets.Dropdown(options=metric_options, value=default_y, description="Y")
-    z_dropdown = widgets.Dropdown(options=z_metric_options, value=default_z, description="Z")
+    prev_button = widgets.Button(description="Previous", layout=widgets.Layout(width="96px"))
+    next_button = widgets.Button(description="Next", layout=widgets.Layout(width="96px"))
+    status_html = widgets.HTML(
+        layout=widgets.Layout(
+            flex="1 1 220px",
+            min_width="220px",
+            margin="0 0 0 8px",
+        )
+    )
+    x_dropdown = widgets.Dropdown(
+        options=metric_options,
+        value=default_x,
+        description="X",
+        layout=widgets.Layout(width="170px"),
+    )
+    y_dropdown = widgets.Dropdown(
+        options=metric_options,
+        value=default_y,
+        description="Y",
+        layout=widgets.Layout(width="170px"),
+    )
+    z_dropdown = widgets.Dropdown(
+        options=z_metric_options,
+        value=default_z,
+        description="Z",
+        layout=widgets.Layout(width="170px"),
+    )
     initial_structure = structure_factory(records[0])
     structure_cache: dict[int, Any] = {0: initial_structure}
     structure_output: widgets.Output | None = None
     structure_viewer: widgets.Widget | None = None
+    left_panel_width = "540px"
     if isinstance(initial_structure, MolstarViewSpec):
         structure_viewer = _molstar_viewer(initial_structure)
-        _struct_w = initial_structure.width
-        _struct_h = initial_structure.height
-        structure_panel: widgets.Widget = widgets.Output(
+        left_panel_width = f"{initial_structure.width}px"
+        structure_panel = widgets.Box(
+            [structure_viewer],
+            layout=_fixed_molstar_panel_layout(
+                initial_structure, margin="0 0 12px 0"
+            ),
+        )
+    else:
+        structure_output = widgets.Output(
             layout=widgets.Layout(
-                width=f"{_struct_w}px",
-                height=f"{_struct_h}px",
-                overflow="hidden",
-                flex_shrink="0",
+                width=left_panel_width,
+                min_width="320px",
+                max_height=f"{max(plot_height, 430)}px",
+                overflow="auto",
+                margin="0 0 12px 0",
             )
         )
-        with structure_panel:
-            display(structure_viewer)
-    else:
-        structure_output = widgets.Output(layout=widgets.Layout(width="54%"))
         with structure_output:
             display(initial_structure)
         structure_panel = structure_output
@@ -1275,7 +1349,11 @@ def make_studio_metric_browser(
         metric_labels=metric_labels,
         plot_height=plot_height,
     )
-    figure_widget, plot_panel = _make_figure_widget(initial_plot, pixel_width=plot_width)
+    figure_widget, plot_panel = _make_figure_widget(
+        initial_plot,
+        pixel_width=plot_width,
+        pixel_height=plot_height,
+    )
 
     def resolve_structure(index: int) -> Any:
         if index not in structure_cache:
@@ -1369,6 +1447,7 @@ def make_studio_metric_browser(
             figure_widget.layout.yaxis.title.text = y_label
             figure_widget.layout.autosize = False
             figure_widget.layout.width = plot_width
+            figure_widget.layout.height = plot_height
 
     def _on_scatter_click(trace: Any, points: Any, selector: Any) -> None:
         if points.point_inds:
@@ -1390,22 +1469,50 @@ def make_studio_metric_browser(
     y_dropdown.observe(render, names="value")
     z_dropdown.observe(render, names="value")
 
-    dropdown_row = widgets.HBox([x_dropdown, y_dropdown, z_dropdown])
-    left_panel = widgets.VBox(
-        [dropdown_row, structure_panel],
-        layout=widgets.Layout(flex_shrink="0"),
+    dropdown_row = widgets.Box(
+        [x_dropdown, y_dropdown, z_dropdown],
+        layout=widgets.Layout(
+            display="flex",
+            flex_flow="row wrap",
+            align_items="center",
+            width=left_panel_width,
+            margin="0 0 8px 0",
+        ),
     )
-    children: list[Any] = [
-        widgets.HBox([prev_button, next_button, status_html]),
-    ]
+    nav_row = widgets.Box(
+        [prev_button, next_button, status_html],
+        layout=widgets.Layout(
+            display="flex",
+            flex_flow="row wrap",
+            align_items="center",
+            width=left_panel_width,
+            margin="0 0 8px 0",
+        ),
+    )
+    left_panel = widgets.VBox(
+        [dropdown_row, structure_panel, nav_row],
+        layout=widgets.Layout(
+            width=left_panel_width,
+            min_width=left_panel_width,
+            max_width=left_panel_width,
+            flex="0 0 auto",
+            margin="0 16px 16px 0",
+        ),
+    )
+    children: list[Any] = []
     if note_html:
-        children.append(widgets.HTML(note_html))
-    children.append(widgets.HBox(
-        [left_panel, plot_panel],
-        layout=widgets.Layout(justify_content="space-between"),
-    ))
+        children.append(widgets.HTML(note_html, layout=widgets.Layout(width="100%")))
+    children.append(
+        widgets.Box(
+            [left_panel, plot_panel],
+            layout=_wrapping_content_layout(),
+        )
+    )
 
-    browser = widgets.VBox(children)
+    browser = widgets.VBox(
+        children,
+        layout=widgets.Layout(width="100%", overflow="auto"),
+    )
     render()
     return browser
 
@@ -1446,9 +1553,19 @@ def make_structure_browser(
     structure_viewer: widgets.Widget | None = None
     if isinstance(initial_structure, MolstarViewSpec):
         structure_viewer = _molstar_viewer(initial_structure)
-        structure_panel: widgets.Widget = widgets.Box([structure_viewer])
+        structure_panel: widgets.Widget = widgets.Box(
+            [structure_viewer],
+            layout=_fixed_molstar_panel_layout(initial_structure, margin="0 0 16px 0"),
+        )
     else:
-        structure_output = widgets.Output()
+        structure_output = widgets.Output(
+            layout=widgets.Layout(
+                width="100%",
+                min_width="320px",
+                overflow="auto",
+                margin="0 0 16px 0",
+            )
+        )
         with structure_output:
             display(initial_structure)
         structure_panel = structure_output
@@ -1488,15 +1605,33 @@ def make_structure_browser(
         )
         render()
 
+    prev_button.layout = widgets.Layout(width="96px")
+    next_button.layout = widgets.Layout(width="96px")
+    status_html.layout = widgets.Layout(
+        flex="1 1 220px",
+        min_width="220px",
+        margin="0 0 0 8px",
+    )
     prev_button.on_click(lambda _: step(-1))
     next_button.on_click(lambda _: step(1))
 
-    children: list[Any] = [widgets.HBox([prev_button, next_button, status_html])]
+    nav_row = widgets.Box(
+        [prev_button, next_button, status_html],
+        layout=widgets.Layout(
+            display="flex",
+            flex_flow="row wrap",
+            align_items="center",
+            width="100%",
+            margin="0 0 8px 0",
+        ),
+    )
+
+    children: list[Any] = [nav_row]
     if note_html:
-        children.append(widgets.HTML(note_html))
+        children.append(widgets.HTML(note_html, layout=widgets.Layout(width="100%")))
     children.append(structure_panel)
 
-    browser = widgets.VBox(children)
+    browser = widgets.VBox(children, layout=widgets.Layout(width="100%", overflow="auto"))
     render()
     return browser
 
@@ -1542,18 +1677,34 @@ def _make_keyboard_nav_widget() -> object:
     return _KeyboardNav()
 
 
-def _responsive_structure_width(spec: MolstarViewSpec) -> str:
-    return f"min({spec.width}px, 100%)"
-
-
-def _fixed_structure_panel_layout(width: str, spec_width: int, height: str) -> widgets.Layout:
+def _fixed_molstar_panel_layout(
+    spec: MolstarViewSpec,
+    *,
+    margin: str = "0 16px 16px 0",
+) -> widgets.Layout:
+    width = f"{spec.width}px"
+    height = f"{spec.height}px"
     return widgets.Layout(
         width=width,
-        min_width="0",
-        max_width=f"{spec_width}px",
+        min_width=width,
+        max_width=width,
         height=height,
-        flex="0 1 auto",
+        min_height=height,
+        max_height=height,
+        flex="0 0 auto",
         overflow="hidden",
+        margin=margin,
+    )
+
+
+def _wrapping_content_layout() -> widgets.Layout:
+    return widgets.Layout(
+        display="flex",
+        flex_flow="row wrap",
+        align_items="flex-start",
+        justify_content="flex-start",
+        width="100%",
+        overflow="auto",
     )
 
 
@@ -1605,26 +1756,23 @@ def make_studio_structure_viewer(
     structure_output: widgets.Output | None = None
     structure_viewer: widgets.Widget | None = None
     if isinstance(initial_structure, MolstarViewSpec):
-        structure_width = _responsive_structure_width(initial_structure)
         structure_viewer = _molstar_viewer(
             initial_structure,
             hide_controls=False,
-            widget_width=structure_width,
-            widget_height=height,
         )
         structure_panel: widgets.Widget = widgets.Box(
             [structure_viewer],
-            layout=_fixed_structure_panel_layout(
-                structure_width, initial_structure.width, height
-            ),
+            layout=_fixed_molstar_panel_layout(initial_structure),
         )
     else:
         structure_output = widgets.Output(
             layout=widgets.Layout(
                 width="100%",
+                min_width="320px",
                 max_height=height,
                 overflow="auto",
-                flex="1 1 auto",
+                flex="1 1 520px",
+                margin="0 16px 16px 0",
             )
         )
         with structure_output:
@@ -1638,6 +1786,7 @@ def make_studio_structure_viewer(
             min_width="280px",
             max_height=height,
             overflow="auto",
+            margin="0 0 16px 0",
         ),
     )
 
@@ -1661,16 +1810,11 @@ def make_studio_structure_viewer(
 
         structure = resolve_structure(current_step["value"], index)
         if structure_viewer is not None and isinstance(structure, MolstarViewSpec):
-            structure_width = _responsive_structure_width(structure)
             _update_molstar_viewer(
                 structure_viewer,
                 structure,
-                widget_width=structure_width,
-                widget_height=height,
             )
-            structure_panel.layout = _fixed_structure_panel_layout(
-                structure_width, structure.width, height
-            )
+            structure_panel.layout = _fixed_molstar_panel_layout(structure)
         elif structure_output is not None:
             with structure_output:
                 clear_output(wait=True)
@@ -1711,13 +1855,7 @@ def make_studio_structure_viewer(
 
     content = widgets.Box(
         [structure_panel, metrics_html],
-        layout=widgets.Layout(
-            display="flex",
-            flex_flow="row wrap",
-            align_items="flex-start",
-            width="100%",
-            overflow="hidden",
-        ),
+        layout=_wrapping_content_layout(),
     )
 
     if len(normalized_steps) > 1:
@@ -1751,6 +1889,7 @@ def make_studio_structure_viewer(
                 flex_flow="row wrap",
                 align_items="center",
                 width="100%",
+                margin="0 0 12px 0",
             ),
         )
     else:
@@ -1761,11 +1900,15 @@ def make_studio_structure_viewer(
                 flex_flow="row wrap",
                 align_items="center",
                 width="100%",
+                margin="0 0 12px 0",
             ),
         )
 
     update_display(0)
-    return widgets.VBox([nav_bar, content, keyboard_nav])
+    return widgets.VBox(
+        [nav_bar, content, keyboard_nav],
+        layout=widgets.Layout(width="100%", overflow="auto"),
+    )
 
 
 __all__ = [
