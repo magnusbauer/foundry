@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
+from html import escape
 from typing import Any
 
 import biotite.structure as struc
@@ -55,6 +56,18 @@ class MolstarViewSpec:
     color_data: dict[str, Any] | None
     width: int
     height: int
+
+
+@dataclass(slots=True)
+class StudioViewerStep:
+    step_number: int
+    name: str
+    records: Sequence[dict[str, Any]]
+    metrics_df: pd.DataFrame
+    structure_factory: Callable[[dict[str, Any]], Any]
+    label_column: str
+    metric_columns: Sequence[str] | None = None
+    metric_labels: dict[str, str] | None = None
 
 
 def extract_min_interface_pae(summary_confidences: dict[str, Any]) -> float:
@@ -279,6 +292,10 @@ def compute_phosphosite_hbond_metrics(
 
 def _molstar_viewer(
     spec: MolstarViewSpec,
+    *,
+    hide_controls: bool = True,
+    widget_width: str | None = None,
+    widget_height: str | None = None,
 ) -> widgets.Widget:
     try:
         from ipymolstar import PDBeMolstar
@@ -290,12 +307,15 @@ def _molstar_viewer(
         raise ImportError(msg) from error
 
     viewer = PDBeMolstar(
-        height=f"{spec.height}px",
-        width=f"{spec.width}px",
-        hide_controls=True,
+        height=widget_height or f"{spec.height}px",
+        width=widget_width or f"{spec.width}px",
+        hide_controls=hide_controls,
         hide_expand_icon=True,
     )
-    viewer.layout = widgets.Layout(width=f"{spec.width}px", height=f"{spec.height}px")
+    viewer.layout = widgets.Layout(
+        width=widget_width or f"{spec.width}px",
+        height=widget_height or f"{spec.height}px",
+    )
     viewer.custom_data = spec.custom_data
     viewer.color_data = spec.color_data
     return viewer
@@ -333,8 +353,17 @@ def _molstar_spec(
     )
 
 
-def _update_molstar_viewer(viewer: widgets.Widget, spec: MolstarViewSpec) -> None:
-    viewer.layout = widgets.Layout(width=f"{spec.width}px", height=f"{spec.height}px")
+def _update_molstar_viewer(
+    viewer: widgets.Widget,
+    spec: MolstarViewSpec,
+    *,
+    widget_width: str | None = None,
+    widget_height: str | None = None,
+) -> None:
+    viewer.layout = widgets.Layout(
+        width=widget_width or f"{spec.width}px",
+        height=widget_height or f"{spec.height}px",
+    )
     viewer.custom_data = spec.custom_data
     viewer.color_data = spec.color_data
 
@@ -950,6 +979,64 @@ def _format_cell_value(value: Any) -> str:
     return str(value)
 
 
+_STUDIO_INFO_PANEL_CSS = """\
+<style scoped>
+.sv-info-panel { padding: 12px 16px; font-family: system-ui, sans-serif; font-size: 13px; }
+.sv-info-panel .sv-name { font-weight: 700; font-size: 16px; margin-bottom: 2px; }
+.sv-info-panel .sv-artifact-id { font-family: monospace; font-size: 11px; color: #888; word-break: break-all; margin-bottom: 2px; }
+.sv-info-panel .sv-step-ctx { font-size: 12px; color: #666; margin-bottom: 8px; }
+.sv-info-panel .sv-group { margin-bottom: 10px; }
+.sv-info-panel .sv-group-header { font-weight: 600; font-size: 13px; color: #444; border-bottom: 1px solid #e0e0e0; padding-bottom: 3px; margin-bottom: 4px; }
+.sv-info-panel .sv-metrics-table { width: 100%; border-collapse: collapse; }
+.sv-info-panel .sv-metrics-table td { padding: 2px 0; }
+.sv-info-panel .sv-metrics-table td:first-child { text-align: left; color: #555; }
+.sv-info-panel .sv-metrics-table td:last-child { text-align: right; font-family: monospace; }
+</style>
+"""
+
+
+def _build_studio_info_panel_html(
+    *,
+    step: StudioViewerStep,
+    row: pd.Series,
+) -> str:
+    metric_columns = [
+        column
+        for column in (
+            step.metric_columns
+            or [column for column in step.metrics_df.columns if column != step.label_column]
+        )
+        if column in row.index and column != step.label_column
+    ]
+
+    parts = [_STUDIO_INFO_PANEL_CSS, '<div class="sv-info-panel">']
+    name = escape(str(row[step.label_column]))
+    artifact_id = escape(step.name)
+    step_context = escape(f"Step {step.step_number} · {step.name}")
+
+    parts.append(f'<div class="sv-name">{name}</div>')
+    parts.append(f'<div class="sv-artifact-id">{artifact_id}</div>')
+    parts.append(f'<div class="sv-step-ctx">{step_context}</div>')
+
+    if metric_columns:
+        parts.append('<div class="sv-group">')
+        parts.append('<div class="sv-group-header">Metrics</div>')
+        parts.append('<table class="sv-metrics-table">')
+        for column in metric_columns:
+            parts.append(
+                "<tr>"
+                f"<td>{escape(_metric_label(column, step.metric_labels))}</td>"
+                f"<td>{escape(_format_cell_value(row[column]))}</td>"
+                "</tr>"
+            )
+        parts.append("</table></div>")
+    else:
+        parts.append("<em>No metrics for this structure.</em>")
+
+    parts.append("</div>")
+    return "\n".join(parts)
+
+
 def _numeric_metric_columns(
     metrics_df: pd.DataFrame,
     *,
@@ -1396,6 +1483,213 @@ def make_structure_browser(
     return browser
 
 
+_KEYBOARD_NAV_ESM = """
+export default {
+    render({ model, el }) {
+        el.innerHTML = 'Navigate structures: press <b>[</b> for previous, <b>]</b> for next';
+        el.style.padding = '4px 8px';
+        el.style.color = '#666';
+        el.style.fontStyle = 'italic';
+
+        function handler(e) {
+            var tag = (e.target.tagName || '').toLowerCase();
+            if (tag === 'input' || tag === 'textarea'
+                || e.target.isContentEditable
+                || e.target.closest('.CodeMirror, .cm-editor')) return;
+            if (e.key === '[') {
+                model.set('nav_request', 'prev_' + Date.now());
+                model.save_changes();
+            } else if (e.key === ']') {
+                model.set('nav_request', 'next_' + Date.now());
+                model.save_changes();
+            }
+        }
+
+        document.addEventListener('keydown', handler);
+
+        return () => { document.removeEventListener('keydown', handler); };
+    }
+};
+"""
+
+
+def _make_keyboard_nav_widget() -> object:
+    import anywidget
+    import traitlets
+
+    class _KeyboardNav(anywidget.AnyWidget):
+        _esm = _KEYBOARD_NAV_ESM
+        nav_request = traitlets.Unicode("").tag(sync=True)
+
+    return _KeyboardNav()
+
+
+def make_studio_structure_viewer(
+    *,
+    steps: Sequence[StudioViewerStep],
+    height: str = "500px",
+) -> widgets.VBox:
+    if not steps:
+        raise ValueError("steps must not be empty")
+
+    normalized_steps: list[StudioViewerStep] = []
+    for step in steps:
+        browser_df = step.metrics_df.reset_index(drop=True).copy()
+        if not step.records:
+            raise ValueError(f"{step.name} has no records to display")
+        if len(step.records) != len(browser_df):
+            raise ValueError(
+                f"{step.name} records and metrics_df must have the same number of rows"
+            )
+        normalized_steps.append(
+            StudioViewerStep(
+                step_number=step.step_number,
+                name=step.name,
+                records=step.records,
+                metrics_df=browser_df,
+                structure_factory=step.structure_factory,
+                label_column=step.label_column,
+                metric_columns=step.metric_columns,
+                metric_labels=step.metric_labels,
+            )
+        )
+
+    structure_caches: dict[int, dict[int, Any]] = {}
+
+    def resolve_structure(step_index: int, index: int) -> Any:
+        step_cache = structure_caches.setdefault(step_index, {})
+        if index not in step_cache:
+            step_cache[index] = normalized_steps[step_index].structure_factory(
+                normalized_steps[step_index].records[index]
+            )
+        return step_cache[index]
+
+    current_step = {"value": 0}
+    initial_structure = resolve_structure(0, 0)
+
+    structure_output: widgets.Output | None = None
+    structure_viewer: widgets.Widget | None = None
+    if isinstance(initial_structure, MolstarViewSpec):
+        structure_viewer = _molstar_viewer(
+            initial_structure,
+            hide_controls=False,
+            widget_width="100%",
+            widget_height=height,
+        )
+        structure_panel: widgets.Widget = widgets.Box(
+            [structure_viewer],
+            layout=widgets.Layout(width="60%", height=height),
+        )
+    else:
+        structure_output = widgets.Output(
+            layout=widgets.Layout(width="60%", height=height, overflow="auto")
+        )
+        with structure_output:
+            display(initial_structure)
+        structure_panel = structure_output
+
+    metrics_html = widgets.HTML(
+        value="",
+        layout=widgets.Layout(width="40%", max_height=height, overflow="auto"),
+    )
+
+    slider = widgets.IntSlider(
+        value=0,
+        min=0,
+        max=max(0, len(normalized_steps[0].records) - 1),
+        step=1,
+        description="Structure:",
+        continuous_update=False,
+        layout=widgets.Layout(width="350px"),
+    )
+    label = widgets.Label(value="", layout=widgets.Layout(width="300px"))
+    prev_btn = widgets.Button(description="< Prev", layout=widgets.Layout(width="80px"))
+    next_btn = widgets.Button(description="Next >", layout=widgets.Layout(width="80px"))
+
+    def update_display(index: int) -> None:
+        step = normalized_steps[current_step["value"]]
+        row = step.metrics_df.iloc[index]
+        label.value = f"{index + 1} / {len(step.records)}"
+
+        structure = resolve_structure(current_step["value"], index)
+        if structure_viewer is not None and isinstance(structure, MolstarViewSpec):
+            _update_molstar_viewer(
+                structure_viewer,
+                structure,
+                widget_width="100%",
+                widget_height=height,
+            )
+        elif structure_output is not None:
+            with structure_output:
+                clear_output(wait=True)
+                display(structure)
+
+        metrics_html.value = _build_studio_info_panel_html(step=step, row=row)
+
+    def on_slider_change(change: dict[str, Any]) -> None:
+        update_display(change["new"])
+
+    def on_prev_click(_: object) -> None:
+        if slider.value > slider.min:
+            slider.value -= 1
+        else:
+            slider.value = slider.max
+
+    def on_next_click(_: object) -> None:
+        if slider.value < slider.max:
+            slider.value += 1
+        else:
+            slider.value = slider.min
+
+    slider.observe(on_slider_change, names="value")
+    prev_btn.on_click(on_prev_click)
+    next_btn.on_click(on_next_click)
+
+    keyboard_nav = _make_keyboard_nav_widget()
+
+    def on_nav_request(change: dict[str, Any]) -> None:
+        value = change["new"]
+        if value.startswith("prev"):
+            on_prev_click(None)
+        elif value.startswith("next"):
+            on_next_click(None)
+
+    keyboard_nav.observe(on_nav_request, names=["nav_request"])
+
+    content = widgets.HBox([structure_panel, metrics_html])
+
+    if len(normalized_steps) > 1:
+        options = [
+            (
+                f"Step {step.step_number}: {step.name} ({len(step.records)} structures)",
+                idx,
+            )
+            for idx, step in enumerate(normalized_steps)
+        ]
+        step_dropdown = widgets.Dropdown(
+            options=options,
+            value=0,
+            description="",
+            layout=widgets.Layout(width="320px"),
+        )
+
+        def on_step_change(change: dict[str, Any]) -> None:
+            current_step["value"] = change["new"]
+            slider.max = max(0, len(normalized_steps[current_step["value"]].records) - 1)
+            if slider.value == 0:
+                update_display(0)
+            else:
+                slider.value = 0
+
+        step_dropdown.observe(on_step_change, names="value")
+        nav_bar = widgets.HBox([step_dropdown, prev_btn, slider, next_btn, label])
+    else:
+        nav_bar = widgets.HBox([prev_btn, slider, next_btn, label])
+
+    update_display(0)
+    return widgets.VBox([nav_bar, content, keyboard_nav])
+
+
 __all__ = [
     "HBOND_CUTOFF_ANGLE",
     "HBOND_CUTOFF_DIST",
@@ -1407,6 +1701,7 @@ __all__ = [
     "SASA_POINT_NUMBER",
     "SASA_PROBE_RADIUS",
     "SASA_VDW_RADII",
+    "StudioViewerStep",
     "align_mobile_on_binder_backbone",
     "atom_triplet_label",
     "binder_backbone_rmsd",
@@ -1423,6 +1718,7 @@ __all__ = [
     "make_sasa_view",
     "make_structure_browser",
     "make_studio_metric_browser",
+    "make_studio_structure_viewer",
     "make_structure_overlay_spec",
     "make_structure_overlay_view",
     "paired_backbone_indices",
