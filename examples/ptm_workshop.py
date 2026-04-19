@@ -1380,19 +1380,19 @@ def _build_metric_scatter(
         "xaxis_title": x_label,
         "yaxis_title": y_label,
         "height": plot_height,
-        "margin": dict(l=90 if z_column else 0, r=28, t=45, b=30 if z_column else 0),
+        "margin": dict(l=0, r=92 if z_column else 28, t=45, b=30 if z_column else 0),
     }
     if z_column:
         layout_kw["coloraxis"] = {
             "colorscale": "Viridis",
             "showscale": True,
             "colorbar": {
-                "title": {"text": z_label, "side": "bottom"},
+                "title": {"text": z_label},
                 "thickness": 14,
                 "len": 0.9,
-                "x": 0,
-                "xanchor": "right",
-                "xpad": 5,
+                "x": 1.02,
+                "xanchor": "left",
+                "xpad": 0,
             },
         }
     fig.update_layout(**layout_kw)
@@ -1530,10 +1530,10 @@ def make_studio_metric_browser(
     structure_cache: dict[int, Any] = {0: initial_structure}
     structure_output: widgets.Output | None = None
     structure_viewer: widgets.Widget | None = None
-    left_panel_width = "540px"
+    structure_width_px = 520
     if isinstance(initial_structure, MolstarViewSpec):
         structure_viewer = _molstar_viewer(initial_structure)
-        left_panel_width = f"{initial_structure.width}px"
+        structure_width_px = int(initial_structure.width)
         structure_panel = widgets.Box(
             [structure_viewer],
             layout=_fixed_molstar_panel_layout(
@@ -1541,9 +1541,10 @@ def make_studio_metric_browser(
             ),
         )
     else:
+        structure_width_px = max(plot_width, 520)
         structure_output = widgets.Output(
             layout=widgets.Layout(
-                width=left_panel_width,
+                width=f"{structure_width_px}px",
                 min_width="320px",
                 max_height=f"{max(plot_height, 430)}px",
                 overflow="auto",
@@ -1553,6 +1554,10 @@ def make_studio_metric_browser(
         with structure_output:
             display(initial_structure)
         structure_panel = structure_output
+    panel_width_px = max(plot_width, structure_width_px)
+    panel_width = f"{panel_width_px}px"
+    plot_panel_width_px = max(plot_width, structure_width_px + 80)
+    plot_panel_width = f"{plot_panel_width_px}px"
     initial_plot = _build_metric_scatter(
         browser_df,
         label_column=label_column,
@@ -1566,13 +1571,13 @@ def make_studio_metric_browser(
     )
     figure_widget, plot_panel = _make_figure_widget(
         initial_plot,
-        pixel_width=plot_width,
+        pixel_width=plot_panel_width_px,
         pixel_height=plot_height,
     )
     plot_panel.layout = widgets.Layout(
-        width=f"{plot_width}px",
+        width=plot_panel_width,
         min_width="360px",
-        max_width=f"{plot_width}px",
+        max_width=plot_panel_width,
         height=f"{plot_height}px",
         min_height=f"{plot_height}px",
         max_height=f"{plot_height}px",
@@ -1583,8 +1588,9 @@ def make_studio_metric_browser(
     selected_metrics_html = widgets.HTML(
         value="",
         layout=widgets.Layout(
-            width=left_panel_width,
-            min_width=left_panel_width,
+            width=panel_width,
+            min_width=panel_width,
+            max_width=panel_width,
             max_height="220px",
             overflow="auto",
         ),
@@ -1667,15 +1673,15 @@ def make_studio_metric_browser(
                     colorscale="Viridis",
                     showscale=True,
                     colorbar=go.layout.coloraxis.ColorBar(
-                        title=dict(text=z_label, side="bottom"),
+                        title=dict(text=z_label),
                         thickness=14,
                         len=0.9,
-                        x=0,
-                        xanchor="right",
-                        xpad=5,
+                        x=1.02,
+                        xanchor="left",
+                        xpad=0,
                     ),
                 )
-                figure_widget.layout.margin = dict(l=90, r=28, t=45, b=30)
+                figure_widget.layout.margin = dict(l=0, r=92, t=45, b=30)
             else:
                 figure_widget.data[0].customdata = None
                 figure_widget.data[0].marker = go.scatter.Marker(
@@ -1693,7 +1699,7 @@ def make_studio_metric_browser(
             figure_widget.layout.xaxis.title.text = x_label
             figure_widget.layout.yaxis.title.text = y_label
             figure_widget.layout.autosize = False
-            figure_widget.layout.width = plot_width
+            figure_widget.layout.width = plot_panel_width_px
             figure_widget.layout.height = plot_height
 
     def _on_scatter_click(trace: Any, points: Any, selector: Any) -> None:
@@ -1714,6 +1720,18 @@ def make_studio_metric_browser(
     x_dropdown.observe(render, names="value")
     y_dropdown.observe(render, names="value")
     z_dropdown.observe(render, names="value")
+
+    keyboard_nav = _make_keyboard_nav_widget()
+
+    def on_nav_request(change: dict[str, Any]) -> None:
+        value = change["new"]
+        if value.startswith("prev"):
+            step(-1)
+        elif value.startswith("next"):
+            step(1)
+
+    keyboard_nav.observe(on_nav_request, names=["nav_request"])
+    keyboard_nav.layout = widgets.Layout(height="0px", overflow="hidden")
 
     dropdown_row = widgets.Box(
         [x_dropdown, y_dropdown, z_dropdown],
@@ -1738,20 +1756,20 @@ def make_studio_metric_browser(
     left_panel = widgets.VBox(
         [structure_panel, selected_metrics_html],
         layout=widgets.Layout(
-            width=left_panel_width,
-            min_width=left_panel_width,
-            max_width=left_panel_width,
-            flex="0 0 auto",
+            width=panel_width,
+            min_width="360px",
+            max_width=panel_width,
+            flex="1 1 0",
             margin="0 16px 16px 0",
         ),
     )
     right_panel = widgets.VBox(
         [dropdown_row, plot_panel],
         layout=widgets.Layout(
-            width=f"{plot_width}px",
+            width=plot_panel_width,
             min_width="360px",
-            max_width=f"{plot_width}px",
-            flex="0 0 auto",
+            max_width=plot_panel_width,
+            flex="1 1 0",
             margin="0 0 16px 0",
         ),
     )
@@ -1767,7 +1785,7 @@ def make_studio_metric_browser(
     )
 
     browser = widgets.VBox(
-        children,
+        [*children, keyboard_nav],
         layout=widgets.Layout(width="100%", overflow="auto"),
     )
     render()
